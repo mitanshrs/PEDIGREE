@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PEDIGREE | READ</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="logo.png">
+    <style>
+        .drill-down { border-left: 2px solid var(--accent); padding-left: 15px; margin: 10px 0; cursor: pointer; }
+        .drill-down:hover { background: rgba(233, 69, 96, 0.1); }
+        .meta-label { color: var(--terminal); font-size: 0.7rem; text-transform: uppercase; }
+        .path-nav { font-size: 0.8rem; margin-bottom: 20px; color: var(--accent); }
+    </style>
+</head>
+<body>
+    <nav>
+        <img src="logo.png"width="35px" height="35px">
+        <a href="index.html">> HOME</a>
+        <a href="write.html">> WRITE</a>
+        <a href="read.html" style="color: var(--terminal);">> READ</a>
+        <a href="list.html">> LIST</a>
+        <a href="transfer.html">> SYNC</a>
+    </nav>
+    
+    <div class="container">
+        <h1 class="title">PEDIGREE</h1>
+        <h1>[ DATA_QUERY_MODULE ]</h1>
+        
+        <div class="card">
+            <label>QUERY_INPUT (12-Digit, 6-Char, or Full 12-6-1)</label>
+            <input type="text" id="queryInput" placeholder="INPUT_KEY...">
+            <button onclick="processQuery()">EXECUTE_QUERY</button>
+        </div>
+
+        <div id="outputContainer" class="card" style="display:none;">
+            <div id="pathTracker" class="path-nav"></div>
+            <div id="resultsContent"></div>
+        </div>
+    </div>
+    <p class="mitansh-ud">By Mitansh Udernani</p>
+    <script src="logic.js"></script>
+    <script>
+        const out = document.getElementById('resultsContent');
+        const box = document.getElementById('outputContainer');
+        const path = document.getElementById('pathTracker');
+
+        function processQuery() {
+            const q = document.getElementById('queryInput').value.trim();
+            box.style.display = "block";
+            out.innerHTML = "";
+            
+            const parts = q.split('-');
+
+            if (parts.length === 3) {
+                showIdentity(parts[0], parts[1], parts[2]);
+            } else if (q.length === 12) {
+                showItemGroups(q);
+            } else if (q.length === 6 || batches[q]) {
+                showBatchGroups(q);
+            } else {
+                out.innerHTML = "> ERROR: INVALID_KEY_LENGTH";
+            }
+        }
+
+        // 1. View all Batches for a specific Item
+        function showItemGroups(itemId) {
+            path.innerText = `PATH: ITEM_${itemId}`;
+            if (!items[itemId]) return out.innerHTML = "> ERR: BLUEPRINT_NOT_FOUND";
+            
+            out.innerHTML = `<h3>BLUEPRINT: ${items[itemId].name}</h3><p class="meta-label">Grouped by Batch:</p>`;
+            
+            let found = false;
+            for (let bID in batches) {
+                if (batches[bID][itemId]) {
+                    found = true;
+                    const unitCount = Object.keys(batches[bID][itemId]).length;
+                    const div = document.createElement('div');
+                    div.className = "drill-down";
+                    div.innerHTML = `> BATCH: ${bID} (${unitCount} Identities Found)`;
+                    div.onclick = () => showBatchItems(bID, itemId);
+                    out.appendChild(div);
+                }
+            }
+            if (!found) out.innerHTML += "> NO_PRODUCTION_HISTORY_FOUND";
+        }
+
+        // 2. View all Items in a specific Batch
+        function showBatchGroups(batchId) {
+            path.innerText = `PATH: BATCH_${batchId}`;
+            if (!batches[batchId]) return out.innerHTML = "> ERR: BATCH_NOT_FOUND";
+
+            out.innerHTML = `<h3>BATCH_CONTENTS: ${batchId}</h3><p class="meta-label">Select Item Category:</p>`;
+            
+            for (let iID in batches[batchId]) {
+                const name = items[iID]?.name || "UNKNOWN_TYPE";
+                const div = document.createElement('div');
+                div.className = "drill-down";
+                div.innerHTML = `> TYPE: ${name} (${iID})`;
+                div.onclick = () => showBatchItems(batchId, iID);
+                out.appendChild(div);
+            }
+        }
+
+        // 3. List unique identities for a specific Batch + Item pair
+        function showBatchItems(bID, iID) {
+            path.innerText = `PATH: BATCH_${bID} / ITEM_${iID}`;
+            out.innerHTML = `<h3>IDENTITIES IN ${bID}</h3>`;
+            
+            const units = batches[bID][iID];
+            for (let uID in units) {
+                const div = document.createElement('div');
+                div.className = "drill-down";
+                div.innerHTML = `> IDENTITY_CODE: ${uID} (Owner: ${units[uID].current_owner})`;
+                div.onclick = () => showIdentity(iID, bID, uID);
+                out.appendChild(div);
+            }
+            const back = document.createElement('button');
+            back.innerText = "<< RETURN_TO_GROUP";
+            back.style.marginTop = "20px";
+            back.onclick = () => processQuery();
+            out.appendChild(back);
+        }
+
+        // 4. Final detail view for one specific 12-6-1 Identity
+        function showIdentity(i12, b6, u1) {
+            path.innerText = `PATH: ${i12}-${b6}-${u1}`;
+            const data = batches[b6]?.[i12]?.[u1];
+            if (!data) return out.innerHTML = "> ERR: IDENTITY_VOID";
+
+            out.innerHTML = `
+                <h3>IDENTITY_REPORT: ${u1}</h3>
+                <div class="card">
+                    <p class="meta-label">Blueprint</p>
+                    <p>${items[i12].name} (${i12})</p>
+                    <p class="meta-label">Current Custodian</p>
+                    <p>${data.current_owner}</p>
+                </div>
+                <h3>CUSTODY_LOG</h3>
+                ${data.history.map(h => `<div class="card" style="font-size:0.7rem">
+                    [${h.date}]<br>FROM: ${h.from}<br>TO: ${h.to}
+                </div>`).reverse().join('')}
+            `;
+            
+            const back = document.createElement('button');
+            back.innerText = "<< BACK_TO_BATCH";
+            back.onclick = () => showBatchItems(b6, i12);
+            out.appendChild(back);
+        }
+    </script>
+</body>
+</html>

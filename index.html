@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head><title>PEDIGREE | HOME</title><link rel="stylesheet" href="style.css"><link rel="icon" href="logo.png"></head>
+<body>
+     <nav>
+        <img src="logo.png"width="35px" height="35px">
+        <a href="index.html" style="color: var(--terminal);">> HOME</a>
+        <a href="write.html">> WRITE</a>
+        <a href="read.html">> READ</a>
+        <a href="list.html">> LIST</a>
+        <a href="transfer.html">> SYNC</a>
+    </nav>
+    <div class="container">
+        <h1 class="title">PEDIGREE</h1>
+        <h1>OVERVIEW</h1>
+        <div class="card">
+            <p class="status-text">> BLUEPRINTS_LOADED: <span id="c1">0</span></p>
+            <p class="status-text">> BATCHES_ACTIVE: <span id="c2">0</span></p>
+            <p class="status-text">> UNIQUE_IDENTITIES: <span id="c3">0</span></p>
+        </div>
+        <button onclick="location.href='write.html'">INITIATE_NEW_ENTRY</button>
+    </div>
+    <p class="mitansh-ud">By Mitansh Udernani</p>
+    <script src="logic.js"></script>
+    <script>
+        document.getElementById('c1').innerText = Object.keys(items).length;
+        document.getElementById('c2').innerText = Object.keys(batches).length;
+        let u = 0; for(let b in batches) for(let i in batches[b]) u += Object.keys(batches[b][i]).length;
+        document.getElementById('c3').innerText = u;
+    </script>
+</body>
+</html>

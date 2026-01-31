@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PEDIGREE | LIST</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="logo.png">
+    <style>
+        :root {
+            --term-green: #00ff41;
+            --term-bg: #050505;
+            --term-glow: rgba(0, 255, 65, 0.2);
+        }
+
+        /* Override modern styles for Terminal look */
+        body { 
+            background: var(--term-bg) !important; 
+            color: var(--term-green) !important; 
+            font-family: 'Courier New', Courier, monospace !important; 
+        }
+
+        .container { border: 1px solid var(--term-green); box-shadow: 0 0 15px var(--term-glow); }
+        
+        .filter-nav { border-bottom: 1px solid var(--term-green); padding-bottom: 15px; }
+        
+        .filter-btn { 
+            background: transparent !important; 
+            border: 1px solid var(--term-green) !important; 
+            color: var(--term-green) !important; 
+            text-transform: uppercase;
+            font-size: 0.7rem !important;
+        }
+
+        .filter-btn.active { 
+            background: var(--term-green) !important; 
+            color: black !important; 
+            box-shadow: 0 0 10px var(--term-green);
+        }
+
+        .list-item { 
+            border-bottom: 1px dashed var(--term-green) !important; 
+            background: transparent !important;
+            border-radius: 0 !important;
+        }
+
+        .list-item:hover { 
+            background: rgba(0, 255, 65, 0.1) !important; 
+        }
+
+        .badge { 
+            background: var(--term-green) !important; 
+            color: black !important; 
+            border-radius: 0 !important;
+        }
+
+        h1 { color: var(--term-green) !important; text-transform: uppercase; letter-spacing: 4px; }
+        
+        .scanline {
+            width: 100%;
+            height: 2px;
+            background: rgba(0, 255, 65, 0.1);
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+            pointer-events: none;
+            animation: scan 4s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="scanline"></div>
+     <nav>
+        <img src="logo.png"width="35px" height="35px">
+        <a href="index.html">> HOME</a>
+        <a href="write.html">> WRITE</a>
+        <a href="read.html">> READ</a>
+        <a href="list.html" style="color: var(--terminal);">> LIST</a>
+        <a href="transfer.html">> SYNC</a>
+    </nav>
+    
+    <div class="container">
+        <h1 class="title">PEDIGREE</h1>
+        <h1>[ REGISTRY_MANIFEST ]</h1>
+        
+        <div class="filter-nav">
+            <button id="b1" class="filter-btn active" onclick="show('u')">TYPE: IDENTITIES</button>
+            <button id="b2" class="filter-btn" onclick="show('b')">TYPE: BATCHES</button>
+            <button id="b3" class="filter-btn" onclick="show('i')">TYPE: BLUEPRINTS</button>
+        </div>
+
+        <div id="list-display">
+            </div>
+    </div>
+    <p class="mitansh-ud">By Mitansh Udernani</p>
+    <script src="logic.js"></script>
+    <script>
+        function show(m) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            const l = document.getElementById('list-display'); 
+            l.innerHTML = "> ACCESSING SECTORS...<br>";
+
+            // Small delay to mimic terminal loading
+            setTimeout(() => {
+                l.innerHTML = "";
+                if(m==='u') {
+                    document.getElementById('b1').classList.add('active');
+                    let found = false;
+                    for(let b in batches) {
+                        for(let i in batches[b]) {
+                            for(let u in batches[b][i]) {
+                                found = true;
+                                l.innerHTML += `
+                                <div class='list-item'>
+                                    <div>
+                                        <span class="badge">SID: ${i}-${b}-${u}</span><br>
+                                        <span>CUSTODIAN: ${batches[b][i][u].current_owner}</span>
+                                    </div>
+                                    <button onclick="view('${i}-${b}-${u}')" style="width:auto; background:transparent; border:1px solid var(--term-green); color:var(--term-green); font-size:0.6rem;">DECODE</button>
+                                </div>`;
+                            }
+                        }
+                    }
+                    if(!found) l.innerHTML = "> NO_DATA_DETECTED";
+                } 
+                else if(m==='b') {
+                    document.getElementById('b2').classList.add('active');
+                    for(let b in batches) {
+                        l.innerHTML += `<div class='list-item' onclick="view('${b}')">>> BATCH_ID: ${b} <span class='badge'>OPEN</span></div>`;
+                    }
+                } 
+                else {
+                    document.getElementById('b3').classList.add('active');
+                    for(let i in items) {
+                        l.innerHTML += `<div class='list-item' onclick="view('${i}')">>> BLUEPRINT: ${items[i].name} <span class='badge'>${i}</span></div>`;
+                    }
+                }
+            }, 300);
+        }
+
+        function view(id) {
+            sessionStorage.setItem('searchQuery', id);
+            window.location.href = 'read.html';
+        }
+
+        show('u');
+    </script>
+</body>
+</html>

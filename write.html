@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head><title>PEDIGREE | WRITE</title><link rel="stylesheet" href="style.css"><link rel="icon" href="logo.png"></head>
+<body>
+    <nav>
+        <img src="logo.png"width="35px" height="35px">
+        <a href="index.html" >> HOME</a>
+        <a href="write.html" style="color: var(--terminal);">> WRITE</a>
+        <a href="read.html">> READ</a>
+        <a href="list.html">> LIST</a>
+        <a href="transfer.html">> SYNC</a>
+    </nav>
+    <div class="container">
+        <h1 class="title">PEDIGREE</h1>
+        <h1>[ ENCODING_MODULE ]</h1>
+        
+        <label>SELECT_OPERATION_MODE</label>
+        <select id="mode" onchange="toggleMode()">
+            <option value="item">CREATE_NEW_ITEM_BLUEPRINT (12)</option>
+            <option value="batch">INITIALIZE_BATCH (6)</option>
+            <option value="unique">MINT_UNIQUE_IDENTITY (12-6-1)</option>
+        </select>
+
+        <div id="blueprint-fields" class="card">
+            <label>ITEM_ID (12 DIGITS)</label>
+            <input type="text" id="id12" placeholder="180030176195">
+            <label>ITEM_NAME</label>
+            <input type="text" id="name" placeholder="OBJECT_ALPHA">
+        </div>
+
+        <div id="batch-fields" class="card" style="display:none;">
+            <label>BATCH_CODE (6 CHARS)</label>
+            <input type="text" id="id6" placeholder="BTCH01">
+        </div>
+
+        <div id="unique-fields" class="card" style="display:none;">
+            <label>UNIT_ID (1 DIGIT: 1-9)</label>
+            <input type="number" id="id1" min="1" max="9" placeholder="1">
+            <label>INITIAL_CUSTODIAN</label>
+            <input type="text" id="owner" placeholder="USER_01">
+        </div>
+
+        <button onclick="executeWrite()">EXECUTE_WRITE_COMMAND</button>
+    </div>
+
+    <script src="logic.js"></script>
+    <script>
+        function toggleMode() {
+            const m = document.getElementById('mode').value;
+            document.getElementById('blueprint-fields').style.display = "block";
+            document.getElementById('batch-fields').style.display = (m === 'batch' || m === 'unique') ? "block" : "none";
+            document.getElementById('unique-fields').style.display = (m === 'unique') ? "block" : "none";
+        }
+
+        function executeWrite() {
+            const mode = document.getElementById('mode').value;
+            const i12 = document.getElementById('id12').value;
+            
+            // 1. Create Blueprint
+            if(!items[i12]) items[i12] = { name: document.getElementById('name').value || "UNNAMED" };
+
+            // 2. Handle Batch/Unique
+            if(mode !== 'item') {
+                const i6 = document.getElementById('id6').value;
+                if(!batches[i6]) batches[i6] = {};
+                if(!batches[i6][i12]) batches[i6][i12] = {};
+
+                if(mode === 'unique') {
+                    const i1 = document.getElementById('id1').value;
+                    if(i1 < 1 || i1 > 9) return alert("UNIT_RANGE_ERROR");
+                    if(batches[i6][i12][i1]) return alert("IDENTITY_EXISTS");
+
+                    batches[i6][i12][i1] = {
+                        current_owner: document.getElementById('owner').value,
+                        history: [{ from: "ORIGIN", to: document.getElementById('owner').value, date: new Date().toLocaleString() }]
+                    };
+                }
+            }
+            sync(); alert("WRITE_COMPLETE");
+        }
+    </script>
+    <p class="mitansh-ud">By Mitansh Udernani</p>
+</body>
+</html>
