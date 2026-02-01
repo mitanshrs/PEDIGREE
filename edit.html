@@ -162,8 +162,13 @@
                 `;
                 histInterface.appendChild(div);
             });
+            const saveBtn = document.createElement('button');
+            saveBtn.className = "save-banner-btn";
+            saveBtn.innerText = "SAVE HISTORY CHANGES";
+            saveBtn.onclick = () => { sync(); alert("HISTORY LOG RECONSTRUCTION SAVED"); };
+            histInterface.appendChild(saveBtn);
         }
-
+        
         function updateHist(index, field, value) {
             batches[parts[1]][parts[0]][parts[2]].history[index][field] = value;
             sync();
