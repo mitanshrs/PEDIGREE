@@ -13,15 +13,9 @@
         }
 
         /* Override modern styles for Terminal look */
-        body { 
-            background: var(--term-bg) !important; 
-            color: var(--term-green) !important; 
-            font-family: 'Courier New', Courier, monospace !important; 
-        }
 
-        .container { border: 1px solid var(--term-green); box-shadow: 0 0 15px var(--term-glow); }
         
-        .filter-nav { border-bottom: 1px solid var(--term-green); padding-bottom: 15px; }
+        .filter-nav { padding-bottom: 15px; }
         
         .filter-btn { 
             background: transparent !important; 
@@ -38,8 +32,7 @@
         }
 
         .list-item { 
-            border-bottom: 1px dashed var(--term-green) !important; 
-            background: transparent !important;
+           background: transparent !important;
             border-radius: 0 !important;
         }
 
@@ -48,12 +41,9 @@
         }
 
         .badge { 
-            background: var(--term-green) !important; 
-            color: black !important; 
+            color: rgb(255, 255, 255) !important; 
             border-radius: 0 !important;
         }
-
-        h1 { color: var(--term-green) !important; text-transform: uppercase; letter-spacing: 4px; }
         
         .scanline {
             width: 100%;
@@ -120,7 +110,7 @@
                                         <span class="badge">SID: ${i}-${b}-${u}</span><br>
                                         <span>CUSTODIAN: ${batches[b][i][u].current_owner}</span>
                                     </div>
-                                    <button onclick="view('${i}-${b}-${u}')" style="width:auto; background:transparent; border:1px solid var(--term-green); color:var(--term-green); font-size:0.6rem;">DECODE</button>
+                                    <button onclick="view('${i}-${b}-${u}')" style="width:auto; background:transparent; border:1px solid var(--accent); color:var(--accent); font-size:0.6rem;">DECODE</button>
                                 </div>`;
                             }
                         }
