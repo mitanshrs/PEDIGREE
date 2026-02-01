@@ -1,45 +1,176 @@
 <!DOCTYPE html>
 <html>
-<head><title>PEDIGREE | Sync</title><link rel="stylesheet" href="style.css"><link rel="icon" href="logo.png"></head>
+<head>
+    <title>PEDIGREE | Sync</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="logo.png">
+    <style>
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: var(--panel);
+            border: 1px solid var(--accent);
+            padding: 30px;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 0 20px var(--glow);
+        }
+        .modal-content h2 {
+            color: var(--accent);
+            font-size: 1.2rem;
+            margin-top: 0;
+        }
+        .modal-content p {
+            font-size: 0.8rem;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+        .modal-btns {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .btn-danger {
+            border-color: #ff4444 !important;
+            color: #ff4444 !important;
+        }
+        .btn-danger:hover {
+            background: #ff4444 !important;
+            color: white !important;
+        }
+    </style>
+</head>
 <body>
-     <div class="scanline"></div>
+    <div class="scanline"></div>
     <nav>
-        <img src="logo.png"width="35px" height="35px">
+        <img src="logo.png" width="35px" height="35px" alt="Logo">
         <a href="index.html">> HOME</a>
         <a href="write.html">> WRITE</a>
         <a href="read.html">> READ</a>
         <a href="list.html">> LIST</a>
         <a href="transfer.html" style="color: var(--terminal);">> SYNC</a>
     </nav>
-    <h1 class="title">PEDIGREE</h1>
-    <h1>[ DATA_SYNC_INTERFACE ]</h1>
-    <div class="card">
-        <label>EXPORT_LOCAL_STORAGE</label>
-        <button onclick="downloadAsJS()">DOWNLOAD_DB.JS</button>
+    
+    <div class="container">
+        <h1 class="title">PEDIGREE</h1>
+        <h1>[ DATA_SYNC_INTERFACE ]</h1>
+        
+        <div class="card">
+            <label>EXPORT_LOCAL_STORAGE</label>
+            <button onclick="downloadAsJS()">DOWNLOAD_DB.JS</button>
+        </div>
+        
+        <div class="card">
+            <label>IMPORT_EXTERNAL_DATA</label>
+            <!-- Hidden file input triggered by the button below -->
+            <input type="file" id="f" style="display: none;" onchange="importFile()">
+            <button onclick="document.getElementById('f').click()">UPLOAD_OVERWRITE</button>
+            <p id="importStatus" style="font-size: 0.65rem; color: var(--terminal); margin-top: 10px; display: none;">> PROCESSING_DATA...</p>
+        </div>
+
+        <div class="card" style="border-color: #ff4444;">
+            <label style="color: #ff4444;">SYSTEM_RESET_PROTOCOL</label>
+            <p style="font-size: 0.65rem; color: #888; margin-bottom: 10px;">Warning: Resetting will erase all blueprints, batches, and identities from this device.</p>
+            <button class="btn-danger" onclick="showResetModal()">INITIATE_FACTORY_RESET</button>
+        </div>
     </div>
-    <div class="card">
-        <label>IMPORT_EXTERNAL_DATA</label>
-        <input type="file" id="f">
-        <button onclick="importFile()">UPLOAD_OVERWRITE</button>
+
+    <!-- Custom Reset Modal -->
+    <div id="resetModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>CONFIRM_RESET</h2>
+            <p>Would you like to archive your current data before wiping the system database?</p>
+            <div class="modal-btns">
+                <button onclick="handleReset(true)">DOWNLOAD_AND_RESET</button>
+                <button class="btn-danger" onclick="handleReset(false)">RESET_WITHOUT_DOWNLOAD</button>
+                <button style="border-color: #555; color: #555;" onclick="hideResetModal()">CANCEL_ABORT</button>
+            </div>
+        </div>
     </div>
-</div>
+
     <p class="mitansh-ud">By Mitansh Udernani</p>
+    
     <script src="logic.js"></script>
     <script>
-        function importFile() {
-            const f = document.getElementById('f').files[0];
-            if (!f) {
-                alert("No file added");
-                return;
+        const modal = document.getElementById('resetModal');
+
+        function showResetModal() {
+            modal.style.display = 'flex';
+        }
+
+        function hideResetModal() {
+            modal.style.display = 'none';
+        }
+
+        function handleReset(shouldDownload) {
+            if (shouldDownload) {
+                downloadAsJS();
             }
+
+            // Clear local objects
+            items = {};
+            batches = {};
+            
+            // Sync empty objects to LocalStorage
+            sync();
+            
+            hideResetModal();
+            
+            // Visual feedback instead of alert
+            const title = document.querySelector('h1.title');
+            title.innerText = "SYSTEM_WIPED";
+            title.style.color = "#ff4444";
+            
+            setTimeout(() => {
+                window.location.href = "index.html";
+            }, 1500);
+        }
+
+        function importFile() {
+            const fileInput = document.getElementById('f');
+            const statusText = document.getElementById('importStatus');
+            const f = fileInput.files[0];
+            
+            if (!f) return;
+
+            statusText.style.display = 'block';
+            
             const reader = new FileReader();
             reader.onload = function(e) {
-                const s = document.createElement('script');
-                s.text = e.target.result;
-                document.body.appendChild(s);
-                if (typeof imported_items !== 'undefined') {
-                    items = imported_items; batches = imported_batches;
-                    sync(); alert("Database Updated!");
+                const content = e.target.result;
+                try {
+                    const itemsMatch = content.match(/var imported_items = ([\s\S]*?);/);
+                    const batchesMatch = content.match(/var imported_batches = ([\s\S]*?);/);
+                    
+                    if (itemsMatch && batchesMatch) {
+                        items = JSON.parse(itemsMatch[1]);
+                        batches = JSON.parse(batchesMatch[1]);
+                        sync();
+                        
+                        statusText.innerText = "> DATA_IMPORT_SUCCESSFUL";
+                        setTimeout(() => {
+                            location.reload();
+                        }, 800);
+                    } else {
+                        throw new Error("Invalid Format");
+                    }
+                } catch (err) {
+                    statusText.innerText = "> ERROR: INVALID_FILE_FORMAT";
+                    statusText.style.color = "#ff4444";
+                    console.error("Import failed", err);
+                    // Reset input so the same file can be tried again if fixed
+                    fileInput.value = '';
                 }
             };
             reader.readAsText(f);

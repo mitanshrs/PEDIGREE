@@ -10,12 +10,25 @@
         .drill-down:hover { background: rgba(233, 69, 96, 0.1); }
         .meta-label { color: var(--terminal); font-size: 0.7rem; text-transform: uppercase; }
         .path-nav { font-size: 0.8rem; margin-bottom: 20px; color: var(--accent); }
+        .action-btn { 
+            background: transparent; 
+            border: 1px solid var(--terminal); 
+            color: var(--terminal); 
+            padding: 8px 15px; 
+            font-size: 0.7rem; 
+            cursor: pointer; 
+            margin-bottom: 15px;
+            display: inline-block;
+            text-decoration: none;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .action-btn:hover { background: var(--terminal); color: black; }
     </style>
 </head>
 <body>
     <div class="scanline"></div>
     <nav>
-        <img src="logo.png"width="35px" height="35px">
+        <img src="logo.png" width="35px" height="35px">
         <a href="index.html">> HOME</a>
         <a href="write.html">> WRITE</a>
         <a href="read.html" style="color: var(--terminal);">> READ</a>
@@ -39,13 +52,13 @@
         </div>
     </div>
     <p class="mitansh-ud">By Mitansh Udernani</p>
+
     <script src="logic.js"></script>
     <script>
         const out = document.getElementById('resultsContent');
         const box = document.getElementById('outputContainer');
         const path = document.getElementById('pathTracker');
 
-        // Check URL for search parameter and auto-execute
         window.addEventListener('DOMContentLoaded', function() {
             const params = new URLSearchParams(window.location.search);
             const searchValue = params.get('search');
@@ -57,6 +70,7 @@
 
         function processQuery() {
             const q = document.getElementById('queryInput').value.trim();
+            if(!q) return;
             box.style.display = "block";
             out.innerHTML = "";
             
@@ -69,16 +83,19 @@
             } else if (q.length === 6 || batches[q]) {
                 showBatchGroups(q);
             } else {
-                out.innerHTML = "> ERROR: INVALID_KEY_LENGTH";
+                out.innerHTML = "> ERROR: INVALID_KEY_LENGTH_OR_FORMAT";
             }
         }
 
-        // 1. View all Batches for a specific Item
         function showItemGroups(itemId) {
             path.innerText = `PATH: ITEM_${itemId}`;
             if (!items[itemId]) return out.innerHTML = "> ERR: BLUEPRINT_NOT_FOUND";
             
-            out.innerHTML = `<h3>BLUEPRINT: ${items[itemId].name}</h3><p class="meta-label">Grouped by Batch:</p>`;
+            out.innerHTML = `
+                <a href="edit.html?id=${itemId}" class="action-btn">MODIFY_BLUEPRINT</a>
+                <h3>BLUEPRINT: ${items[itemId].name}</h3>
+                <p class="meta-label">Batches Associated:</p>
+            `;
             
             let found = false;
             for (let bID in batches) {
@@ -87,7 +104,7 @@
                     const unitCount = Object.keys(batches[bID][itemId]).length;
                     const div = document.createElement('div');
                     div.className = "drill-down";
-                    div.innerHTML = `> BATCH: ${bID} (${unitCount} Identities Found)`;
+                    div.innerHTML = `> BATCH: ${bID} (${unitCount} Units Detected)`;
                     div.onclick = () => showBatchItems(bID, itemId);
                     out.appendChild(div);
                 }
@@ -95,12 +112,15 @@
             if (!found) out.innerHTML += "> NO_PRODUCTION_HISTORY_FOUND";
         }
 
-        // 2. View all Items in a specific Batch
         function showBatchGroups(batchId) {
             path.innerText = `PATH: BATCH_${batchId}`;
             if (!batches[batchId]) return out.innerHTML = "> ERR: BATCH_NOT_FOUND";
 
-            out.innerHTML = `<h3>BATCH_CONTENTS: ${batchId}</h3><p class="meta-label">Select Item Category:</p>`;
+            out.innerHTML = `
+                <a href="edit.html?id=${batchId}" class="action-btn">MODIFY_BATCH</a>
+                <h3>BATCH_CONTENTS: ${batchId}</h3>
+                <p class="meta-label">Blueprint Categories:</p>
+            `;
             
             for (let iID in batches[batchId]) {
                 const name = items[iID]?.name || "UNKNOWN_TYPE";
@@ -112,7 +132,6 @@
             }
         }
 
-        // 3. List unique identities for a specific Batch + Item pair
         function showBatchItems(bID, iID) {
             path.innerText = `PATH: BATCH_${bID} / ITEM_${iID}`;
             out.innerHTML = `<h3>IDENTITIES IN ${bID}</h3>`;
@@ -121,99 +140,47 @@
             for (let uID in units) {
                 const div = document.createElement('div');
                 div.className = "drill-down";
-                div.innerHTML = `> IDENTITY_CODE: ${uID} (Owner: ${units[uID].current_owner})`;
+                div.innerHTML = `> UNIT_ID: ${uID} (Custodian: ${units[uID].current_owner})`;
                 div.onclick = () => showIdentity(iID, bID, uID);
                 out.appendChild(div);
             }
             const back = document.createElement('button');
-            back.innerText = "<< RETURN_TO_GROUP";
+            back.innerText = "<< RETURN_TO_ROOT";
             back.style.marginTop = "20px";
             back.onclick = () => processQuery();
             out.appendChild(back);
         }
 
-        // 4. Final detail view for one specific 12-6-1 Identity
         function showIdentity(i12, b6, u1) {
-            path.innerText = `PATH: ${i12}-${b6}-${u1}`;
+            const fullId = `${i12}-${b6}-${u1}`;
+            path.innerText = `PATH: ${fullId}`;
             const data = batches[b6]?.[i12]?.[u1];
             if (!data) return out.innerHTML = "> ERR: IDENTITY_VOID";
 
             out.innerHTML = `
+                <a href="edit.html?id=${fullId}" class="action-btn">MANAGE_IDENTITY_&_LOGS</a>
                 <h3>IDENTITY_REPORT: ${u1}</h3>
                 <div class="card">
-                    <p class="meta-label">Blueprint</p>
+                    <p class="meta-label">Blueprint Type</p>
                     <p>${items[i12].name} (${i12})</p>
-                    <p class="meta-label">Current Custodian</p>
+                    <p class="meta-label">Active Custodian</p>
                     <p>${data.current_owner}</p>
+                    <p class="meta-label">Current Deployment</p>
+                    <p>${data.location || 'N/A'}</p>
                 </div>
-                <h3>TRANSFER_OWNERSHIP</h3>
-                <div class="card">
-                    <p class="meta-label">From</p>
-                    <input type="text" id="transferFrom" placeholder="Current Owner" value="${data.current_owner}" readonly>
-                    <p class="meta-label">To</p>
-                    <input type="text" id="transferTo" placeholder="New Owner">
-                    <p class="meta-label">Location</p>
-                    <input type="text" id="transferLocation" placeholder="Transfer Location">
-                    <p class="meta-label">Date/Time</p>
-                    <select id="timeOption">
-                        <option value="now">RIGHT_NOW</option>
-                        <option value="custom">CUSTOM</option>
-                    </select>
-                    <input type="datetime-local" id="customTime" style="display:none; margin-top: 10px;">
-                    <button onclick="submitTransfer('${i12}', '${b6}', '${u1}')" style="margin-top: 10px;">CONFIRM_TRANSFER</button>
-                </div>
+
                 <h3>CUSTODY_LOG</h3>
-                ${data.history.map(h => `<div class="card" style="font-size:0.7rem">
-                    [${h.date}]<br>FROM: ${h.from}<br>TO: ${h.to}<br>LOCATION: ${h.location || 'N/A'}
-                </div>`).reverse().join('')}
+                ${data.history.map((h, idx) => `
+                    <div class="card" style="font-size:0.7rem; border-left: 2px solid ${idx === data.history.length-1 ? 'var(--terminal)' : '#333'}">
+                        [${h.date}]<br>FROM: ${h.from}<br>TO: ${h.to}<br>LOCATION: ${h.location || 'N/A'}
+                    </div>`).reverse().join('')}
             `;
             
-            const timeSelect = out.querySelector('#timeOption');
-            const customTimeInput = out.querySelector('#customTime');
-            timeSelect.addEventListener('change', function() {
-                customTimeInput.style.display = this.value === 'custom' ? 'block' : 'none';
-            });
-            
             const back = document.createElement('button');
-            back.innerText = "<< BACK_TO_BATCH";
+            back.innerText = "<< BACK_TO_LISTING";
             back.onclick = () => showBatchItems(b6, i12);
             out.appendChild(back);
         }
-
-        function submitTransfer(i12, b6, u1) {
-    const from = document.getElementById('transferFrom').value;
-    const to = document.getElementById('transferTo').value;
-    const location = document.getElementById('transferLocation').value;
-    const timeOption = document.getElementById('timeOption').value;
-    const customTime = document.getElementById('customTime').value;
-
-    if (!to || !location) {
-        alert("ERROR: MISSING_REQUIRED_FIELDS");
-        return;
-    }
-
-    const date = timeOption === 'now' ? new Date().toLocaleString() : new Date(customTime).toLocaleString();
-    
-    const data = batches[b6][i12][u1];
-    
-    // Write transfer history to the unique identity
-    const historyEntry = {
-        from: from,
-        to: to,
-        location: location,
-        date: date
-    };
-    
-    data.history.push(historyEntry);
-    data.current_owner = to;
-    
-    // Persist the update to LocalStorage
-    sync();
-    
-    // Notify user and REFRESH the UI to show the new history entry
-    alert("TRANSFER_RECORDED_SUCCESSFULLY");
-    showIdentity(i12, b6, u1);
-}
     </script>
 </body>
 </html>

@@ -111,6 +111,7 @@
                                         <span>CUSTODIAN: ${batches[b][i][u].current_owner}</span>
                                     </div>
                                     <button onclick="view('${i}-${b}-${u}')" style="width:auto; background:transparent; border:1px solid var(--accent); color:var(--accent); font-size:0.6rem;">DECODE</button>
+                                    <button onclick="location.href='edit.html?id=${i}-${b}-${u}'" style="width:auto; border:1px solid var(--terminal); color:var(--terminal); font-size:0.6rem; margin-left:5px;">EDIT</button>
                                 </div>`;
                             }
                         }
@@ -120,13 +121,19 @@
                 else if(m==='b') {
                     document.getElementById('b2').classList.add('active');
                     for(let b in batches) {
-                        l.innerHTML += `<div class='list-item' onclick="view('${b}')">>> BATCH_ID: ${b}</div>`;
+                        l.innerHTML += `<div class='list-item' style='display:flex; justify-content:space-between;'>
+                                            <span onclick="view('${b}')">>> BATCH_ID: ${b}</span>
+                                            <button onclick="location.href='edit.html?id=${b}'" style="width:20%; font-size:0.6rem;">EDIT</button>
+                                        </div>`;
                     }
                 } 
                 else {
                     document.getElementById('b3').classList.add('active');
                     for(let i in items) {
-                        l.innerHTML += `<div class='list-item' onclick="view('${i}')">>> BLUEPRINT: ${items[i].name} <span class='badge'>${i}</span></div>`;
+                        l.innerHTML += `<div class='list-item' style='display:flex; justify-content:space-between;'>
+                                            <span onclick="view('${i}')">>> BLUEPRINT: ${items[i].name}</span>
+                                            <button onclick="location.href='edit.html?id=${i}'" style="width:20%; font-size:0.6rem;">EDIT</button>
+                                        </div>`
                     }
                 }
             }, 300);

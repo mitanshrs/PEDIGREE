@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PEDIGREE | EDIT</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="logo.png">
+    <style>
+        .history-edit-card { 
+            border: 1px solid #222; 
+            padding: 15px; 
+            margin-bottom: 15px; 
+            background: rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .history-edit-card label { color: var(--accent); font-weight: bold; }
+        .del-hist-btn { 
+            background: rgba(233, 69, 96, 0.1); 
+            border: 1px solid var(--accent); 
+            color: var(--accent); 
+            padding: 5px 10px; 
+            font-size: 0.6rem; 
+            width: auto; 
+            margin-top: 10px;
+        }
+        .del-hist-btn:hover { background: var(--accent); color: white; }
+        hr { border: 0; border-top: 1px dashed #444; margin: 25px 0; }
+        .meta-label { color: var(--terminal); font-size: 0.7rem; text-transform: uppercase; margin-bottom: 2px; display: block; }
+        .section-header { color: var(--terminal); border-bottom: 1px solid var(--terminal); padding-bottom: 5px; margin-bottom: 20px; font-size: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="scanline"></div>
+    <nav>
+        <img src="logo.png" width="35px" height="35px">
+        <a href="index.html">> HOME</a>
+        <a href="write.html">> WRITE</a>
+        <a href="read.html">> READ</a>
+        <a href="list.html">> LIST</a>
+        <a href="transfer.html">> SYNC</a>
+    </nav>
+
+    <div class="container">
+        <h1 class="title">PEDIGREE</h1>
+        <h1>[ EDIT_MODULE ]</h1>
+
+        <div id="main-edit-container">
+            <div id="edit-interface" class="card">
+                <!-- Core Fields for Item/Batch/Identity -->
+            </div>
+
+            <div id="transfer-interface" style="display:none;">
+                <div class="section-header">INITIATE_TRANSFER</div>
+                <div class="card" style="background: rgba(0, 255, 65, 0.05); border-color: var(--terminal);">
+                    <label>NEW_OWNER_ID</label>
+                    <input type="text" id="transferTo" placeholder="Recipient Code...">
+                    <label>TARGET_LOCATION</label>
+                    <input type="text" id="transferLocation" placeholder="Deployment Area...">
+                    <button onclick="executeTransfer()" style="border-color: var(--terminal); color: var(--terminal);">RECORD_TRANSFER_EVENT</button>
+                </div>
+            </div>
+
+            <div id="history-interface">
+                <!-- History logs go here -->
+            </div>
+        </div>
+
+        <div class="card" style="border-color: var(--accent); margin-top: 50px;">
+            <label style="color: var(--accent);">DANGER_ZONE_PROTOCOL</label>
+            <p style="font-size: 0.7rem; color: #888; margin-bottom: 10px;">Warning: This action will permanently delete all records associated with this ID from the local database.</p>
+            <button onclick="executeDelete()" style="background: rgba(233, 69, 96, 0.2); border-color: var(--accent);">PURGE_RECORD_FROM_SYSTEM</button>
+        </div>
+    </div>
+    <p class="mitansh-ud">By Mitansh Udernani</p>
+
+    <script src="logic.js"></script>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const target = params.get('id');
+        const parts = target ? target.split('-') : [];
+        const interface = document.getElementById('edit-interface');
+        const histInterface = document.getElementById('history-interface');
+        const transferInterface = document.getElementById('transfer-interface');
+
+        function loadInterface() {
+            if (!target) return interface.innerHTML = "ERR: NO_TARGET_SPECIFIED";
+
+            if (parts.length === 3) { // Unique Identity
+                const data = batches[parts[1]]?.[parts[0]]?.[parts[2]];
+                if(!data) return interface.innerHTML = "ERR: IDENTITY_NOT_FOUND";
+
+                transferInterface.style.display = "block";
+                interface.innerHTML = `
+                    <div class="section-header">CORE_IDENTITY_CONFIG: ${target}</div>
+                    <span class="meta-label">Active Custodian</span>
+                    <input type="text" id="editOwner" value="${data.current_owner}">
+                    <span class="meta-label">Current Location</span>
+                    <input type="text" id="editLoc" value="${data.location || ''}">
+                    <button onclick="saveIdentity()">SAVE_CORE_CHANGES</button>`;
+
+                renderHistory(data.history);
+            } else if (parts.length === 1 && target.length === 12) { // Item Blueprint
+                if(!items[target]) return interface.innerHTML = "ERR: BLUEPRINT_NOT_FOUND";
+                interface.innerHTML = `
+                    <div class="section-header">BLUEPRINT_CONFIG: ${target}</div>
+                    <span class="meta-label">Asset Designation</span>
+                    <input type="text" id="editItemName" value="${items[target].name}">
+                    <button onclick="saveItem()">UPDATE_BLUEPRINT</button>`;
+            } else if (batches[target]) { // Batch
+                interface.innerHTML = `
+                    <div class="section-header">BATCH_CONFIG: ${target}</div>
+                    <span class="meta-label">Batch ID Code</span>
+                    <input type="text" id="newBatchId" value="${target}">
+                    <button onclick="saveBatch()">UPDATE_BATCH_REGISTRY</button>`;
+            } else {
+                interface.innerHTML = "ERR: UNRECOGNIZED_DATA_TYPE";
+            }
+        }
+
+        function renderHistory(history) {
+            histInterface.innerHTML = "<hr><div class='section-header'>HISTORY_LOG_RECONSTRUCTION</div>";
+            if (!history || history.length === 0) {
+                histInterface.innerHTML += "<p style='font-size:0.8rem; color:#666;'>> NO_LOG_ENTRIES_FOUND</p>";
+                return;
+            }
+
+            // We reverse for display but keep indices correct for modification
+            [...history].reverse().forEach((entry, revIndex) => {
+                const actualIndex = (history.length - 1) - revIndex;
+                const div = document.createElement('div');
+                div.className = 'history-edit-card';
+                div.innerHTML = `
+                    <label>LOG_ENTRY [0x${actualIndex.toString(16).toUpperCase().padStart(2, '0')}]</label>
+                    <span class="meta-label">Timestamp</span>
+                    <input type="text" value="${entry.date}" onchange="updateHist(${actualIndex}, 'date', this.value)">
+                    <span class="meta-label">Source (From)</span>
+                    <input type="text" value="${entry.from}" onchange="updateHist(${actualIndex}, 'from', this.value)">
+                    <span class="meta-label">Destination (To)</span>
+                    <input type="text" value="${entry.to}" onchange="updateHist(${actualIndex}, 'to', this.value)">
+                    <span class="meta-label">Location</span>
+                    <input type="text" value="${entry.location || ''}" onchange="updateHist(${actualIndex}, 'location', this.value)">
+                    <button class="del-hist-btn" onclick="deleteHistEntry(${actualIndex})">DELETE_LOG_ENTRY</button>
+                `;
+                histInterface.appendChild(div);
+            });
+        }
+
+        function updateHist(index, field, value) {
+            batches[parts[1]][parts[0]][parts[2]].history[index][field] = value;
+            sync();
+            console.log(`Log ${index} updated: ${field} = ${value}`);
+        }
+
+        function deleteHistEntry(index) {
+            if(!confirm("CONFIRM: REMOVE_SINGLE_LOG_ENTRY?")) return;
+            batches[parts[1]][parts[0]][parts[2]].history.splice(index, 1);
+            sync();
+            loadInterface();
+        }
+
+        function executeTransfer() {
+            const to = document.getElementById('transferTo').value;
+            const loc = document.getElementById('transferLocation').value;
+            const data = batches[parts[1]][parts[0]][parts[2]];
+
+            if (!to || !loc) {
+                alert("ERR: INCOMPLETE_TRANSFER_DATA");
+                return;
+            }
+
+            const newEntry = {
+                from: data.current_owner,
+                to: to,
+                location: loc,
+                date: new Date().toLocaleString()
+            };
+
+            data.history.push(newEntry);
+            data.current_owner = to;
+            data.location = loc;
+            
+            sync();
+            alert("TRANSFER_ENCODED_SUCCESSFULLY");
+            document.getElementById('transferTo').value = "";
+            document.getElementById('transferLocation').value = "";
+            loadInterface();
+        }
+
+        function saveIdentity() {
+            const data = batches[parts[1]][parts[0]][parts[2]];
+            data.current_owner = document.getElementById('editOwner').value;
+            data.location = document.getElementById('editLoc').value;
+            sync();
+            alert("CORE_IDENTITY_UPDATED");
+        }
+
+        function saveItem() {
+            items[target].name = document.getElementById('editItemName').value;
+            sync();
+            alert("BLUEPRINT_UPDATED");
+        }
+
+        function saveBatch() {
+            const newId = document.getElementById('newBatchId').value.trim();
+            if (!newId || newId === target) return;
+            if (batches[newId]) return alert("ERR: BATCH_ID_COLLISION");
+            
+            batches[newId] = batches[target];
+            delete batches[target];
+            sync();
+            window.location.href = `edit.html?id=${newId}`;
+        }
+
+        function executeDelete() {
+            if (!confirm("CRITICAL: PERFORM_PERMANENT_PURGE?")) return;
+            
+            if (parts.length === 3) {
+                delete batches[parts[1]][parts[0]][parts[2]];
+            } else if (parts.length === 1 && target.length === 12) {
+                delete items[target];
+                for (let b in batches) if (batches[b][target]) delete batches[b][target];
+            } else {
+                delete batches[target];
+            }
+            
+            sync();
+            alert("RECORDS_PURGED_FROM_LOCAL_STORAGE");
+            window.location.href = "list.html";
+        }
+
+        loadInterface();
+    </script>
+</body>
+</html>
