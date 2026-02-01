@@ -181,30 +181,39 @@
         }
 
         function submitTransfer(i12, b6, u1) {
-            const from = document.getElementById('transferFrom').value;
-            const to = document.getElementById('transferTo').value;
-            const location = document.getElementById('transferLocation').value;
-            const timeOption = document.getElementById('timeOption').value;
-            const customTime = document.getElementById('customTime').value;
+    const from = document.getElementById('transferFrom').value;
+    const to = document.getElementById('transferTo').value;
+    const location = document.getElementById('transferLocation').value;
+    const timeOption = document.getElementById('timeOption').value;
+    const customTime = document.getElementById('customTime').value;
 
-            if (!to || !location) {
-                alert("ERROR: MISSING_REQUIRED_FIELDS");
-                return;
-            }
+    if (!to || !location) {
+        alert("ERROR: MISSING_REQUIRED_FIELDS");
+        return;
+    }
 
-            const date = timeOption === 'now' ? new Date().toLocaleString() : new Date(customTime).toLocaleString();
-            
-            const data = batches[b6][i12][u1];
-            data.history.push({
-                from: from,
-                to: to,
-                location: location,
-                date: date
-            });
-            data.current_owner = to;
-
-            showIdentity(i12, b6, u1);
-        }
+    const date = timeOption === 'now' ? new Date().toLocaleString() : new Date(customTime).toLocaleString();
+    
+    const data = batches[b6][i12][u1];
+    
+    // Write transfer history to the unique identity
+    const historyEntry = {
+        from: from,
+        to: to,
+        location: location,
+        date: date
+    };
+    
+    data.history.push(historyEntry);
+    data.current_owner = to;
+    
+    // Persist the update to LocalStorage
+    sync();
+    
+    // Notify user and REFRESH the UI to show the new history entry
+    alert("TRANSFER_RECORDED_SUCCESSFULLY");
+    showIdentity(i12, b6, u1);
+}
     </script>
 </body>
 </html>
