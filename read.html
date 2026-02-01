@@ -125,7 +125,9 @@
         function showIdentity(i12, b6, u1) {
             const data = batches[b6]?.[i12]?.[u1];
             if (!data) return out.innerHTML = "> ERR: IDENTITY VOID";
-            out.innerHTML = `<div class="result-header"><h3>IDENTITY: ${u1}</h3><a href="edit.html?id=${i12}-${b6}-${u1}" class="simple-edit-link">EDIT</a></div><div class="card"><p class="meta-label">Owner</p><p>${data.current_owner}</p><p class="meta-label">Location</p><p>${data.location || 'N/A'}</p></div><h3>HISTORY</h3>${data.history.map((h, idx) => `<div class="card" style="font-size:0.7rem; border-left: 2px solid ${idx === data.history.length-1 ? 'var(--accent)' : '#333'}">[${h.date}] ${h.from} -> ${h.to}</div>`).reverse().join('')}`;
+            out.innerHTML = `<div class="result-header"><h3>IDENTITY: ${u1}</h3><a href="edit.html?id=${i12}-${b6}-${u1}" class="simple-edit-link">EDIT</a></div>
+                             <div class=""><p class="meta-label">NAME:</p><p>${items[i12].name}</p><p class="meta-label">ID:</p><p>${i12}</p><p class="meta-label">Batch id:</p><p>${b6}</p></div>
+                             <div class="card"><p class="meta-label">Owner</p><p>${data.current_owner}</p><p class="meta-label">Location</p><p>${data.location || 'N/A'}</p></div><h3>HISTORY</h3>${data.history.map((h, idx) => `<div class="card" style="font-size:0.7rem; border-left: 2px solid ${idx === data.history.length-1 ? 'var(--accent)' : '#333'}">[${h.date}] ${h.from} -> ${h.to}</div>`).reverse().join('')}`;
         }
     </script>
     <p class="mitansh-ud">By Mitansh Udernani</p>
