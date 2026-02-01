@@ -1,23 +1,26 @@
-# how to use
-
-## to create an item:
-1. Use the write tab
-2. Select blueprint
-3. Enter a 12-digit item number
-4. Enter the name of these items
-5. press excaute write command to make it
-## how to create a batch
-1. Use the write tab
-2. Select batch
-3. Enter a 6-letter/number for the batch name (do not enter anything in the item id/name)
-4. press excaute write command to make it
-## how to create a unique identity
-1. Use the write tab
-2. Select unique identity
-3. Enter the item number and batch name
-4. Enter the 1 for the first one of that item in that batch (MAX: 9 of each item in one batch)
-## how to see all the unique identity of an item
-1. Use the read tab
-2. enter the item no
-3. click enter
-## MORE BEING ADDED
+# PEDIGREE | Supply Chain & Identity Registry
+A terminal-inspired, browser-based asset tracking system designed for managing item blueprints, production batches, and unique unit identities with a full custody history log.
+## 🚀 Overview
+PEDIGREE provides a lightweight, local-first solution for tracking the provenance and movement of assets. It uses a structured ID system (12-digit Item-6-char Batch-1-digit Unit) to ensure granular tracking of every single unit produced.
+## 🛠️ Key Features
+- **Triple-Tier Registry:** Manage Blueprints (Items), Batches, and Unique Identities.
+- **Custody Logging:** Automatic history generation for every transfer of ownership.
+- **Recursive Purging:** Intelligent deletion logic (e.g., deleting a batch removes all units within it).
+- **Data Portability:** Export your entire database as a .js file and import it on any device.
+- **Terminal UI:** Sleek, high-contrast Matrix/Terminal aesthetic with scanline effects.
+## 📂 Project Structure
+- `index.html`: System dashboard and overview.
+- `write.html`: The encoding module for creating new records.
+- `read.html`: Query module for searching and decoding IDs.
+- `edit.html`: Management hub for transfers, log edits, and record deletion.
+- `list.html`: Registry manifest for browsing all sectors.
+- `transfer.html`: Sync, backup, and reset protocols
+- `logic.js` & `style.css`: The engine and aesthetic core.
+## 📖 Quick Start
+- **Create a Blueprint:** Go to WRITE, select Item mode, and enter a 12-digit ID.
+- **Initialise Batch:** Create a 6-character batch code.
+- **Mint Identity:** Link the Item and Batch with a Unit ID (1-9).
+- **Track:** Use the READ tab to view the custody log or EDIT to record a transfer.
+## 👤 Author
+Developed by Mitansh Udernani.
+> Note: This system uses LocalStorage for data persistence. For multi-device synchronization, use the Export/Import features in the SYNC tab.
