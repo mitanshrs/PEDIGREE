@@ -120,7 +120,7 @@
                 else if(m==='b') {
                     document.getElementById('b2').classList.add('active');
                     for(let b in batches) {
-                        l.innerHTML += `<div class='list-item' onclick="view('${b}')">>> BATCH_ID: ${b} <span class='badge'>OPEN</span></div>`;
+                        l.innerHTML += `<div class='list-item' onclick="view('${b}')">>> BATCH_ID: ${b}</div>`;
                     }
                 } 
                 else {
@@ -133,8 +133,7 @@
         }
 
         function view(id) {
-            sessionStorage.setItem('searchQuery', id);
-            window.location.href = 'read.html';
+            window.location.href = `read.html?search=${id}`;
         }
 
         show('u');

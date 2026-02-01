@@ -48,34 +48,48 @@
     <script>
         function toggleMode() {
             const m = document.getElementById('mode').value;
-            document.getElementById('blueprint-fields').style.display = "block";
-            document.getElementById('batch-fields').style.display = (m === 'batch' || m === 'unique') ? "block" : "none";
-            document.getElementById('unique-fields').style.display = (m === 'unique') ? "block" : "none";
+            if (m === 'item') {
+                document.getElementById('blueprint-fields').style.display = "block";
+                document.getElementById('batch-fields').style.display = "none";
+                document.getElementById('unique-fields').style.display = "none";
+            } else if (m === 'batch') {
+                document.getElementById('blueprint-fields').style.display = "none";
+                document.getElementById('batch-fields').style.display = "block";
+                document.getElementById('unique-fields').style.display = "none";
+            } else if (m === 'unique') {
+                document.getElementById('blueprint-fields').style.display = "block";
+                document.getElementById('batch-fields').style.display = "block";
+                document.getElementById('unique-fields').style.display = "block";
+            }
         }
 
         function executeWrite() {
             const mode = document.getElementById('mode').value;
             const i12 = document.getElementById('id12').value;
             
-            // 1. Create Blueprint
-            if(!items[i12]) items[i12] = { name: document.getElementById('name').value || "UNNAMED" };
+            // 1. Create Blueprint (only for item and unique modes)
+            if(mode == 'item' && i12 && !items[i12]) items[i12] = { name: document.getElementById('name').value || "UNNAMED" };
 
             // 2. Handle Batch/Unique
-            if(mode !== 'item') {
+            if(mode == 'batch') {
                 const i6 = document.getElementById('id6').value;
                 if(!batches[i6]) batches[i6] = {};
                 if(!batches[i6][i12]) batches[i6][i12] = {};
+            }
+            
+            if(mode === 'unique') {
+                const i6 = document.getElementById('id6').value;
+                if(!batches[i6]) batches[i6] = {};
+                if(!batches[i6][i12]) batches[i6][i12] = {};
+                
+                const i1 = document.getElementById('id1').value;
+                if(i1 < 1 || i1 > 9) return alert("UNIT_RANGE_ERROR");
+                if(batches[i6][i12][i1]) return alert("IDENTITY_EXISTS");
 
-                if(mode === 'unique') {
-                    const i1 = document.getElementById('id1').value;
-                    if(i1 < 1 || i1 > 9) return alert("UNIT_RANGE_ERROR");
-                    if(batches[i6][i12][i1]) return alert("IDENTITY_EXISTS");
-
-                    batches[i6][i12][i1] = {
-                        current_owner: document.getElementById('owner').value,
-                        history: [{ from: "ORIGIN", to: document.getElementById('owner').value, date: new Date().toLocaleString() }]
-                    };
-                }
+                batches[i6][i12][i1] = {
+                    current_owner: document.getElementById('owner').value,
+                    history: [{ from: "ORIGIN", to: document.getElementById('owner').value, date: new Date().toLocaleString() }]
+                };
             }
             sync(); alert("WRITE_COMPLETE");
         }

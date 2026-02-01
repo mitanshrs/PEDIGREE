@@ -45,6 +45,16 @@
         const box = document.getElementById('outputContainer');
         const path = document.getElementById('pathTracker');
 
+        // Check URL for search parameter and auto-execute
+        window.addEventListener('DOMContentLoaded', function() {
+            const params = new URLSearchParams(window.location.search);
+            const searchValue = params.get('search');
+            if (searchValue) {
+                document.getElementById('queryInput').value = searchValue;
+                processQuery();
+            }
+        });
+
         function processQuery() {
             const q = document.getElementById('queryInput').value.trim();
             box.style.display = "block";

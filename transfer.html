@@ -28,6 +28,10 @@
     <script>
         function importFile() {
             const f = document.getElementById('f').files[0];
+            if (!f) {
+                alert("No file added");
+                return;
+            }
             const reader = new FileReader();
             reader.onload = function(e) {
                 const s = document.createElement('script');
