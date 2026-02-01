@@ -7,7 +7,6 @@ PEDIGREE provides a lightweight, local-first solution for tracking the provenanc
 - **Custody Logging:** Automatic history generation for every transfer of ownership.
 - **Recursive Purging:** Intelligent deletion logic (e.g., deleting a batch removes all units within it).
 - **Data Portability:** Export your entire database as a .js file and import it on any device.
-- **Terminal UI:** Sleek, high-contrast Matrix/Terminal aesthetic with scanline effects.
 ## 📂 Project Structure
 - `index.html`: System dashboard and overview.
 - `write.html`: The encoding module for creating new records.
@@ -15,12 +14,13 @@ PEDIGREE provides a lightweight, local-first solution for tracking the provenanc
 - `edit.html`: Management hub for transfers, log edits, and record deletion.
 - `list.html`: Registry manifest for browsing all sectors.
 - `transfer.html`: Sync, backup, and reset protocols
+- `settings.html`: Edit Themes, and the colour of the website
 - `logic.js` & `style.css`: The engine and aesthetic core.
 ## 📖 Quick Start
 - **Create a Blueprint:** Go to WRITE, select Item mode, and enter a 12-digit ID.
 - **Initialise Batch:** Create a 6-character batch code.
 - **Mint Identity:** Link the Item and Batch with a Unit ID (1-9).
 - **Track:** Use the READ tab to view the custody log or EDIT to record a transfer.
-## 👤 Author
+## 👤 Maker
 Developed by Mitansh Udernani.
 > Note: This system uses LocalStorage for data persistence. For multi-device synchronization, use the Export/Import features in the SYNC tab.
