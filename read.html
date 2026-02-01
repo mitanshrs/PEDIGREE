@@ -146,16 +146,64 @@
                     <p class="meta-label">Current Custodian</p>
                     <p>${data.current_owner}</p>
                 </div>
+                <h3>TRANSFER_OWNERSHIP</h3>
+                <div class="card">
+                    <p class="meta-label">From</p>
+                    <input type="text" id="transferFrom" placeholder="Current Owner" value="${data.current_owner}" readonly>
+                    <p class="meta-label">To</p>
+                    <input type="text" id="transferTo" placeholder="New Owner">
+                    <p class="meta-label">Location</p>
+                    <input type="text" id="transferLocation" placeholder="Transfer Location">
+                    <p class="meta-label">Date/Time</p>
+                    <select id="timeOption">
+                        <option value="now">RIGHT_NOW</option>
+                        <option value="custom">CUSTOM</option>
+                    </select>
+                    <input type="datetime-local" id="customTime" style="display:none; margin-top: 10px;">
+                    <button onclick="submitTransfer('${i12}', '${b6}', '${u1}')" style="margin-top: 10px;">CONFIRM_TRANSFER</button>
+                </div>
                 <h3>CUSTODY_LOG</h3>
                 ${data.history.map(h => `<div class="card" style="font-size:0.7rem">
-                    [${h.date}]<br>FROM: ${h.from}<br>TO: ${h.to}
+                    [${h.date}]<br>FROM: ${h.from}<br>TO: ${h.to}<br>LOCATION: ${h.location || 'N/A'}
                 </div>`).reverse().join('')}
             `;
+            
+            const timeSelect = out.querySelector('#timeOption');
+            const customTimeInput = out.querySelector('#customTime');
+            timeSelect.addEventListener('change', function() {
+                customTimeInput.style.display = this.value === 'custom' ? 'block' : 'none';
+            });
             
             const back = document.createElement('button');
             back.innerText = "<< BACK_TO_BATCH";
             back.onclick = () => showBatchItems(b6, i12);
             out.appendChild(back);
+        }
+
+        function submitTransfer(i12, b6, u1) {
+            const from = document.getElementById('transferFrom').value;
+            const to = document.getElementById('transferTo').value;
+            const location = document.getElementById('transferLocation').value;
+            const timeOption = document.getElementById('timeOption').value;
+            const customTime = document.getElementById('customTime').value;
+
+            if (!to || !location) {
+                alert("ERROR: MISSING_REQUIRED_FIELDS");
+                return;
+            }
+
+            const date = timeOption === 'now' ? new Date().toLocaleString() : new Date(customTime).toLocaleString();
+            
+            const data = batches[b6][i12][u1];
+            data.history.push({
+                from: from,
+                to: to,
+                location: location,
+                date: date
+            });
+            data.current_owner = to;
+
+            showIdentity(i12, b6, u1);
         }
     </script>
 </body>

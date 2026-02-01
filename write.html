@@ -39,6 +39,11 @@
             <input type="number" id="id1" min="1" max="9" placeholder="1">
             <label>INITIAL_CUSTODIAN</label>
             <input type="text" id="owner" placeholder="USER_01">
+            <label>LOCATION</label>
+            <input type="text" id="location" placeholder="WAREHOUSE_A">
+            <label>DATE_AND_TIME</label>
+            <input type="datetime-local" id="datetime">
+            <button type="button" onclick="setCurrentDateTime()">USE_CURRENT_TIME</button>
         </div>
 
         <button onclick="executeWrite()">EXECUTE_WRITE_COMMAND</button>
@@ -46,6 +51,16 @@
 
     <script src="logic.js"></script>
     <script>
+        function setCurrentDateTime() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('datetime').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+
         function toggleMode() {
             const m = document.getElementById('mode').value;
             if (m === 'item') {
@@ -86,9 +101,15 @@
                 if(i1 < 1 || i1 > 9) return alert("UNIT_RANGE_ERROR");
                 if(batches[i6][i12][i1]) return alert("IDENTITY_EXISTS");
 
+                const owner = document.getElementById('owner').value;
+                const location = document.getElementById('location').value;
+                const datetimeValue = document.getElementById('datetime').value;
+                const timestamp = datetimeValue ? new Date(datetimeValue).toLocaleString() : new Date().toLocaleString();
+
                 batches[i6][i12][i1] = {
-                    current_owner: document.getElementById('owner').value,
-                    history: [{ from: "ORIGIN", to: document.getElementById('owner').value, date: new Date().toLocaleString() }]
+                    current_owner: owner,
+                    location: location,
+                    history: [{ from: "ORIGIN", to: owner, date: timestamp, location: location }]
                 };
             }
             sync(); alert("WRITE_COMPLETE");
