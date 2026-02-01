@@ -2,57 +2,65 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>PEDIGREE | READ</title>
+    <title>PEDIGREE | Read</title>
+    <script>
+        (function() {
+            const s = JSON.parse(localStorage.getItem('db_settings')) || {style:'modern', theme:'blue', appearance:'system'};
+            const html = document.documentElement;
+            html.classList.add('style-' + s.style);
+            html.classList.add('theme-' + s.theme);
+            let m = s.appearance;
+            if (s.style === 'terminal') m = 'dark';
+            else if (m === 'system') m = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            html.classList.add('mode-' + m);
+        })();
+    </script>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="logo.png">
     <style>
         .drill-down { border-left: 2px solid var(--accent); padding-left: 15px; margin: 10px 0; cursor: pointer; }
-        .drill-down:hover { background: rgba(233, 69, 96, 0.1); }
-        .meta-label { color: var(--terminal); font-size: 0.7rem; text-transform: uppercase; }
-        .path-nav { font-size: 0.8rem; margin-bottom: 20px; color: var(--accent); }
-        .action-btn { 
-            background: transparent; 
-            border: 1px solid var(--terminal); 
-            color: var(--terminal); 
-            padding: 8px 15px; 
-            font-size: 0.7rem; 
-            cursor: pointer; 
-            margin-bottom: 15px;
-            display: inline-block;
-            text-decoration: none;
-            font-family: 'Courier New', Courier, monospace;
+        .drill-down:hover { background: rgba(128, 128, 128, 0.1); }
+        .meta-label { color: var(--accent); font-size: 0.7rem; text-transform: uppercase; font-weight: bold; }
+        .path-nav { font-size: 0.8rem; margin-bottom: 20px; opacity: 0.7; }
+        .simple-edit-link { 
+            float: right; text-decoration: none; font-size: 0.75rem; 
+            color: var(--accent); border: 1px solid var(--accent); padding: 2px 8px; 
+            font-weight: bold; transition: 0.2s; 
         }
-        .action-btn:hover { background: var(--terminal); color: black; }
+        .simple-edit-link:hover { background: var(--accent); color: white; }
+        .style-terminal .simple-edit-link:hover { color: #000; }
+        .result-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .result-header h3 { margin: 0; }
     </style>
 </head>
 <body>
     <div class="scanline"></div>
     <nav>
-        <img src="logo.png" width="35px" height="35px">
-        <a href="index.html">> HOME</a>
-        <a href="write.html">> WRITE</a>
-        <a href="read.html" style="color: var(--terminal);">> READ</a>
-        <a href="list.html">> LIST</a>
-        <a href="transfer.html">> SYNC</a>
+        <div style="flex: 1; display: flex; align-items: center; gap: 1rem; justify-content: center; margin-left: 45px;">
+            <img src="logo.png" width="35px" height="35px">
+            <a href="index.html">Home</a>
+            <a href="write.html">Write</a>
+            <a href="read.html" style="text-decoration: underline;">Read</a>
+            <a href="list.html">List</a>
+            <a href="transfer.html">Sync</a>
+        </div>
+        <div style="width: 45px; display: flex; justify-content: flex-end;">
+            <a href="settings.html" title="Settings" style="padding: 0; font-size: 1.2rem;">⚙️</a>
+        </div>
     </nav>
-    
     <div class="container">
         <h1 class="title">PEDIGREE</h1>
-        <h1>[ DATA_QUERY_MODULE ]</h1>
-        
+        <h1>READ DATABASE</h1>
         <div class="card">
-            <label>QUERY_INPUT (12-Digit, 6-Char, or Full 12-6-1)</label>
-            <input type="text" id="queryInput" placeholder="INPUT_KEY...">
-            <button onclick="processQuery()">EXECUTE_QUERY</button>
+            <label>KEY INPUT (12-Digit, 6-Char, or Full 12-6-1)</label>
+            <input type="text" id="queryInput" placeholder="INPUT KEY...">
+            <button onclick="processQuery()">FIND</button>
         </div>
-
         <div id="outputContainer" class="card" style="display:none;">
             <div id="pathTracker" class="path-nav"></div>
             <div id="resultsContent"></div>
         </div>
     </div>
-    <p class="mitansh-ud">By Mitansh Udernani</p>
-
     <script src="logic.js"></script>
     <script>
         const out = document.getElementById('resultsContent');
@@ -71,116 +79,55 @@
         function processQuery() {
             const q = document.getElementById('queryInput').value.trim();
             if(!q) return;
-            box.style.display = "block";
-            out.innerHTML = "";
-            
+            box.style.display = "block"; out.innerHTML = "";
             const parts = q.split('-');
-
-            if (parts.length === 3) {
-                showIdentity(parts[0], parts[1], parts[2]);
-            } else if (q.length === 12) {
-                showItemGroups(q);
-            } else if (q.length === 6 || batches[q]) {
-                showBatchGroups(q);
-            } else {
-                out.innerHTML = "> ERROR: INVALID_KEY_LENGTH_OR_FORMAT";
-            }
+            if (parts.length === 3) showIdentity(parts[0], parts[1], parts[2]);
+            else if (q.length === 12) showItemGroups(q);
+            else if (q.length === 6 || batches[q]) showBatchGroups(q);
+            else out.innerHTML = "> ERROR: INVALID KEY";
         }
 
         function showItemGroups(itemId) {
             path.innerText = `PATH: ITEM_${itemId}`;
-            if (!items[itemId]) return out.innerHTML = "> ERR: BLUEPRINT_NOT_FOUND";
-            
-            out.innerHTML = `
-                <a href="edit.html?id=${itemId}" class="action-btn">MODIFY_BLUEPRINT</a>
-                <h3>BLUEPRINT: ${items[itemId].name}</h3>
-                <p class="meta-label">Batches Associated:</p>
-            `;
-            
-            let found = false;
+            if (!items[itemId]) return out.innerHTML = "> ERR: BLUEPRINT NOT FOUND";
+            out.innerHTML = `<div class="result-header"><h3>BLUEPRINT: ${items[itemId].name}</h3><a href="edit.html?id=${itemId}" class="simple-edit-link">EDIT</a></div><p class="meta-label">Batches Associated:</p>`;
             for (let bID in batches) {
                 if (batches[bID][itemId]) {
-                    found = true;
-                    const unitCount = Object.keys(batches[bID][itemId]).length;
-                    const div = document.createElement('div');
-                    div.className = "drill-down";
-                    div.innerHTML = `> BATCH: ${bID} (${unitCount} Units Detected)`;
-                    div.onclick = () => showBatchItems(bID, itemId);
-                    out.appendChild(div);
+                    const div = document.createElement('div'); div.className = "drill-down";
+                    div.innerHTML = `> BATCH: ${bID} (${Object.keys(batches[bID][itemId]).length} Units)`;
+                    div.onclick = () => showBatchItems(bID, itemId); out.appendChild(div);
                 }
             }
-            if (!found) out.innerHTML += "> NO_PRODUCTION_HISTORY_FOUND";
         }
 
         function showBatchGroups(batchId) {
             path.innerText = `PATH: BATCH_${batchId}`;
-            if (!batches[batchId]) return out.innerHTML = "> ERR: BATCH_NOT_FOUND";
-
-            out.innerHTML = `
-                <a href="edit.html?id=${batchId}" class="action-btn">MODIFY_BATCH</a>
-                <h3>BATCH_CONTENTS: ${batchId}</h3>
-                <p class="meta-label">Blueprint Categories:</p>
-            `;
-            
+            if (!batches[batchId]) return out.innerHTML = "> ERR: BATCH NOT FOUND";
+            out.innerHTML = `<div class="result-header"><h3>BATCH: ${batchId}</h3><a href="edit.html?id=${batchId}" class="simple-edit-link">EDIT</a></div><p class="meta-label">Blueprints:</p>`;
             for (let iID in batches[batchId]) {
-                const name = items[iID]?.name || "UNKNOWN_TYPE";
-                const div = document.createElement('div');
-                div.className = "drill-down";
-                div.innerHTML = `> TYPE: ${name} (${iID})`;
-                div.onclick = () => showBatchItems(batchId, iID);
-                out.appendChild(div);
+                const div = document.createElement('div'); div.className = "drill-down";
+                div.innerHTML = `> TYPE: ${items[iID]?.name || iID}`;
+                div.onclick = () => showBatchItems(batchId, iID); out.appendChild(div);
             }
         }
 
         function showBatchItems(bID, iID) {
-            path.innerText = `PATH: BATCH_${bID} / ITEM_${iID}`;
-            out.innerHTML = `<h3>IDENTITIES IN ${bID}</h3>`;
-            
+            path.innerText = `PATH: ${bID} / ${iID}`;
+            out.innerHTML = `<h3>UNITS IN BATCH</h3>`;
             const units = batches[bID][iID];
             for (let uID in units) {
-                const div = document.createElement('div');
-                div.className = "drill-down";
-                div.innerHTML = `> UNIT_ID: ${uID} (Custodian: ${units[uID].current_owner})`;
-                div.onclick = () => showIdentity(iID, bID, uID);
-                out.appendChild(div);
+                const div = document.createElement('div'); div.className = "drill-down";
+                div.innerHTML = `> ID: ${uID} (Owner: ${units[uID].current_owner})`;
+                div.onclick = () => showIdentity(iID, bID, uID); out.appendChild(div);
             }
-            const back = document.createElement('button');
-            back.innerText = "<< RETURN_TO_ROOT";
-            back.style.marginTop = "20px";
-            back.onclick = () => processQuery();
-            out.appendChild(back);
         }
 
         function showIdentity(i12, b6, u1) {
-            const fullId = `${i12}-${b6}-${u1}`;
-            path.innerText = `PATH: ${fullId}`;
             const data = batches[b6]?.[i12]?.[u1];
-            if (!data) return out.innerHTML = "> ERR: IDENTITY_VOID";
-
-            out.innerHTML = `
-                <a href="edit.html?id=${fullId}" class="action-btn">MANAGE_IDENTITY_&_LOGS</a>
-                <h3>IDENTITY_REPORT: ${u1}</h3>
-                <div class="card">
-                    <p class="meta-label">Blueprint Type</p>
-                    <p>${items[i12].name} (${i12})</p>
-                    <p class="meta-label">Active Custodian</p>
-                    <p>${data.current_owner}</p>
-                    <p class="meta-label">Current Deployment</p>
-                    <p>${data.location || 'N/A'}</p>
-                </div>
-
-                <h3>CUSTODY_LOG</h3>
-                ${data.history.map((h, idx) => `
-                    <div class="card" style="font-size:0.7rem; border-left: 2px solid ${idx === data.history.length-1 ? 'var(--terminal)' : '#333'}">
-                        [${h.date}]<br>FROM: ${h.from}<br>TO: ${h.to}<br>LOCATION: ${h.location || 'N/A'}
-                    </div>`).reverse().join('')}
-            `;
-            
-            const back = document.createElement('button');
-            back.innerText = "<< BACK_TO_LISTING";
-            back.onclick = () => showBatchItems(b6, i12);
-            out.appendChild(back);
+            if (!data) return out.innerHTML = "> ERR: IDENTITY VOID";
+            out.innerHTML = `<div class="result-header"><h3>IDENTITY: ${u1}</h3><a href="edit.html?id=${i12}-${b6}-${u1}" class="simple-edit-link">EDIT</a></div><div class="card"><p class="meta-label">Owner</p><p>${data.current_owner}</p><p class="meta-label">Location</p><p>${data.location || 'N/A'}</p></div><h3>HISTORY</h3>${data.history.map((h, idx) => `<div class="card" style="font-size:0.7rem; border-left: 2px solid ${idx === data.history.length-1 ? 'var(--accent)' : '#333'}">[${h.date}] ${h.from} -> ${h.to}</div>`).reverse().join('')}`;
         }
     </script>
+    <p class="mitansh-ud">By Mitansh Udernani</p>
 </body>
 </html>

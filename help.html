@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PEDIGREE | Help</title>
+    
+    <!-- CRITICAL: Anti-Flash Theme Script -->
+    <script>
+        (function() {
+            const s = JSON.parse(localStorage.getItem('db_settings')) || {style:'modern', theme:'blue', appearance:'system'};
+            const html = document.documentElement;
+            html.classList.add('style-' + s.style);
+            html.classList.add('theme-' + s.theme);
+            let m = s.appearance;
+            if (s.style === 'terminal') m = 'dark';
+            else if (m === 'system') m = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            html.classList.add('mode-' + m);
+        })();
+    </script>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="logo.png">
+    <style>
+        .help-section { margin-bottom: 2.5rem; }
+        .help-section h2 { 
+            color: var(--accent); 
+            font-size: 1.1rem; 
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+        }
+        .help-card {
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--accent);
+        }
+        .step-list { list-style: none; padding: 0; margin: 0; }
+        .step-list li { 
+            margin-bottom: 1rem; 
+            font-size: 0.95rem; 
+            display: flex; 
+            gap: 12px;
+            line-height: 1.4;
+        }
+        .step-num { color: var(--accent); font-weight: bold; min-width: 25px; font-family: monospace; }
+        .note { 
+            font-size: 0.75rem; 
+            opacity: 0.7; 
+            display: block;
+            margin-top: 10px;
+            padding: 8px;
+            background: rgba(128, 128, 128, 0.05);
+            border-radius: 4px;
+        }
+        b { color: var(--accent); }
+    </style>
+</head>
+<body>
+    <div class="scanline"></div>
+    <nav>
+        <div style="flex: 1; display: flex; align-items: center; gap: 1rem; justify-content: center; margin-left: 45px;">
+            <img src="logo.png" width="35px" height="35px">
+            <a href="index.html">Home</a>
+            <a href="write.html">Write</a>
+            <a href="read.html">Read</a>
+            <a href="list.html">List</a>
+            <a href="transfer.html">Sync</a>
+            <a href="help.html" style="text-decoration: underline;">Help</a>
+        </div>
+        <div style="width: 45px; display: flex; justify-content: flex-end;">
+            <a href="settings.html" title="Settings" style="padding: 0; font-size: 1.2rem;">⚙️</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1 class="title">HELP CENTER</h1>
+        <h1>OPERATING MANUAL</h1>
+
+        <div class="help-section">
+            <h2>01. The Registry Structure</h2>
+            <div class="card help-card">
+                <p style="font-size: 0.9rem; margin-bottom: 10px;">PEDIGREE uses a <b>12-6-1</b> identification protocol:</p>
+                <ul class="step-list">
+                    <li><span class="step-num">12</span> <b>Blueprint:</b> The master item design ID.</li>
+                    <li><span class="step-num">06</span> <b>Batch:</b> A specific production run code.</li>
+                    <li><span class="step-num">01</span> <b>Unit:</b> A unique single instance (e.g. #19615 of 30000).</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="help-section">
+            <h2>02. Data Creation</h2>
+            <div class="card help-card">
+                <ul class="step-list">
+                    <li><span class="step-num">01</span> <b>Items:</b> Enter a 12-digit code and name in the Write tab.</li>
+                    <li><span class="step-num">02</span> <b>Batches:</b> Create a 6-character code linked to an Item.</li>
+                    <li><span class="step-num">03</span> <b>Units:</b> Assign a Unit ID (1-9) to create a specific identity.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="help-section">
+            <h2>03. Editing & Transfers</h2>
+            <div class="card help-card">
+                <ul class="step-list">
+                    <li><span class="step-num">01</span> Use the <b>Read</b> tab to find a record.</li>
+                    <li><span class="step-num">02</span> Click the <b>EDIT</b> link to modify history or record a new transfer.</li>
+                    <li><span class="step-num">03</span> Transfers automatically update the <b>Current Custodian</b>.</li>
+                </ul>
+                <span class="note">> History logs can be modified individually or deleted if errors occur.</span>
+            </div>
+        </div>
+
+        <div class="help-section">
+            <h2>04. Theme Customization</h2>
+            <div class="card help-card">
+                <ul class="step-list">
+                    <li><span class="step-num">01</span> Click the <b>Gear Icon (⚙️)</b> in the top right.</li>
+                    <li><span class="step-num">02</span> Choose between <b>Modern</b> and <b>Terminal</b> styles.</li>
+                    <li><span class="step-num">03</span> Select your preferred color pair (e.g. Yellow x Blue).</li>
+                </ul>
+                <span class="note">> Terminal style is restricted to Dark Mode for visibility.</span>
+            </div>
+        </div>
+
+        <button onclick="location.href='index.html'">EXIT TO DASHBOARD</button>
+    </div>
+
+    <p class="mitansh-ud">By Mitansh Udernani</p>
+
+    <script src="logic.js"></script>
+</body>
+</html>

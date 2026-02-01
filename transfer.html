@@ -1,7 +1,23 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>PEDIGREE | Sync</title>
+    
+    <!-- CRITICAL: Anti-Flash Theme Script -->
+    <script>
+        (function() {
+            const s = JSON.parse(localStorage.getItem('db_settings')) || {style:'modern', theme:'blue', appearance:'system'};
+            const html = document.documentElement;
+            html.classList.add('style-' + s.style);
+            html.classList.add('theme-' + s.theme);
+            let m = s.appearance;
+            if (s.style === 'terminal') m = 'dark';
+            else if (m === 'system') m = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            html.classList.add('mode-' + m);
+        })();
+    </script>
+
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="logo.png">
     <style>
@@ -24,7 +40,7 @@
             padding: 30px;
             max-width: 400px;
             text-align: center;
-            box-shadow: 0 0 20px var(--glow);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
         .modal-content h2 {
             color: var(--accent);
@@ -33,7 +49,7 @@
         }
         .modal-content p {
             font-size: 0.8rem;
-            color: #ccc;
+            opacity: 0.7;
             margin-bottom: 20px;
         }
         .modal-btns {
@@ -41,60 +57,69 @@
             flex-direction: column;
             gap: 10px;
         }
-        .btn-danger {
-            border-color: #ff4444 !important;
-            color: #ff4444 !important;
-        }
-        .btn-danger:hover {
-            background: #ff4444 !important;
-            color: white !important;
+
+        /* Status text for import */
+        #importStatus {
+            font-size: 0.7rem;
+            margin-top: 10px;
+            font-weight: bold;
+            display: none;
         }
     </style>
 </head>
 <body>
     <div class="scanline"></div>
     <nav>
-        <img src="logo.png" width="35px" height="35px" alt="Logo">
-        <a href="index.html">> HOME</a>
-        <a href="write.html">> WRITE</a>
-        <a href="read.html">> READ</a>
-        <a href="list.html">> LIST</a>
-        <a href="transfer.html" style="color: var(--terminal);">> SYNC</a>
+        <div style="flex: 1; display: flex; align-items: center; gap: 1rem; justify-content: center; margin-left: 45px;">
+            <img src="logo.png" width="35px" height="35px">
+            <a href="index.html">Home</a>
+            <a href="write.html">Write</a>
+            <a href="read.html">Read</a>
+            <a href="list.html">List</a>
+            <a href="transfer.html" style="text-decoration: underline;">Sync</a>
+        </div>
+        <div style="width: 45px; display: flex; justify-content: flex-end;">
+            <a href="settings.html" title="Settings" style="padding: 0; font-size: 1.2rem;">⚙️</a>
+        </div>
     </nav>
     
     <div class="container">
         <h1 class="title">PEDIGREE</h1>
-        <h1>[ DATA_SYNC_INTERFACE ]</h1>
+        <h1>DATABASE SYNCHRONIZATION</h1>
         
         <div class="card">
-            <label>EXPORT_LOCAL_STORAGE</label>
-            <button onclick="downloadAsJS()">DOWNLOAD_DB.JS</button>
+            <label>EXPORT DATABASE</label>
+            <p style="font-size: 0.8rem; opacity: 0.7; margin-bottom: 1rem;">Archive your current registry as a physical .js file.</p>
+            <button onclick="downloadAsJS()">DOWNLOAD DATABASE.JS</button>
         </div>
         
         <div class="card">
-            <label>IMPORT_EXTERNAL_DATA</label>
-            <!-- Hidden file input triggered by the button below -->
-            <input type="file" id="f" style="display: none;" onchange="importFile()">
-            <button onclick="document.getElementById('f').click()">UPLOAD_OVERWRITE</button>
-            <p id="importStatus" style="font-size: 0.65rem; color: var(--terminal); margin-top: 10px; display: none;">> PROCESSING_DATA...</p>
+            <label>IMPORT DATABASE</label>
+            <p style="font-size: 0.8rem; opacity: 0.7; margin-bottom: 1rem;">Restore registry from a backup file. This will overwrite current data.</p>
+            
+            <!-- Hidden file input triggered by button -->
+            <input type="file" id="fileInput" accept=".js" style="display: none;" onchange="handleImport(this)">
+            <button onclick="document.getElementById('fileInput').click()">UPLOAD AND OVERWRITE</button>
+            
+            <div id="importStatus"></div>
         </div>
 
-        <div class="card" style="border-color: #ff4444;">
-            <label style="color: #ff4444;">SYSTEM_RESET_PROTOCOL</label>
-            <p style="font-size: 0.65rem; color: #888; margin-bottom: 10px;">Warning: Resetting will erase all blueprints, batches, and identities from this device.</p>
-            <button class="btn-danger" onclick="showResetModal()">INITIATE_FACTORY_RESET</button>
+        <div class="card">
+            <label style="color: var(--danger);">RESET DATABASE</label>
+            <p style="font-size: 0.8rem; opacity: 0.7; margin-bottom: 1rem;">Permanently erase all local blueprints, batches, and unit identities.</p>
+            <button class="btn-danger" onclick="showResetModal()">START FACTORY RESET</button>
         </div>
     </div>
 
     <!-- Custom Reset Modal -->
     <div id="resetModal" class="modal-overlay">
-        <div class="modal-content">
-            <h2>CONFIRM_RESET</h2>
-            <p>Would you like to archive your current data before wiping the system database?</p>
+        <div class="modal-content card">
+            <h2>CONFIRM RESET</h2>
+            <p>Would you like to archive your data (DOWNLOAD DATABASE.JS) before wiping the local system database?</p>
             <div class="modal-btns">
-                <button onclick="handleReset(true)">DOWNLOAD_AND_RESET</button>
-                <button class="btn-danger" onclick="handleReset(false)">RESET_WITHOUT_DOWNLOAD</button>
-                <button style="border-color: #555; color: #555;" onclick="hideResetModal()">CANCEL_ABORT</button>
+                <button onclick="executeReset(true)">DOWNLOAD AND RESET</button>
+                <button class="btn-danger" onclick="executeReset(false)">RESET WITHOUT DOWNLOAD</button>
+                <button style="border: 1px solid var(--border); background: transparent; color: var(--text);" onclick="hideResetModal()">CANCEL</button>
             </div>
         </div>
     </div>
@@ -104,52 +129,31 @@
     <script src="logic.js"></script>
     <script>
         const modal = document.getElementById('resetModal');
+        const status = document.getElementById('importStatus');
 
-        function showResetModal() {
-            modal.style.display = 'flex';
+        function showResetModal() { modal.style.display = 'flex'; }
+        function hideResetModal() { modal.style.display = 'none'; }
+
+        function executeReset(shouldDownload) {
+            if (shouldDownload) downloadAsJS();
+            localStorage.removeItem('db_items');
+            localStorage.removeItem('db_batches');
+            location.href = "index.html";
         }
 
-        function hideResetModal() {
-            modal.style.display = 'none';
-        }
-
-        function handleReset(shouldDownload) {
-            if (shouldDownload) {
-                downloadAsJS();
-            }
-
-            // Clear local objects
-            items = {};
-            batches = {};
-            
-            // Sync empty objects to LocalStorage
-            sync();
-            
-            hideResetModal();
-            
-            // Visual feedback instead of alert
-            const title = document.querySelector('h1.title');
-            title.innerText = "SYSTEM_WIPED";
-            title.style.color = "#ff4444";
-            
-            setTimeout(() => {
-                window.location.href = "index.html";
-            }, 1500);
-        }
-
-        function importFile() {
-            const fileInput = document.getElementById('f');
-            const statusText = document.getElementById('importStatus');
-            const f = fileInput.files[0];
-            
+        function handleImport(input) {
+            const f = input.files[0];
             if (!f) return;
 
-            statusText.style.display = 'block';
-            
+            status.style.display = 'block';
+            status.style.color = 'var(--accent)';
+            status.innerText = "> PROCESSING_RESTORE_SEQUENCE...";
+
             const reader = new FileReader();
             reader.onload = function(e) {
-                const content = e.target.result;
                 try {
+                    const content = e.target.result;
+                    // Extract variables using Regex to handle the .js format
                     const itemsMatch = content.match(/var imported_items = ([\s\S]*?);/);
                     const batchesMatch = content.match(/var imported_batches = ([\s\S]*?);/);
                     
@@ -157,20 +161,15 @@
                         items = JSON.parse(itemsMatch[1]);
                         batches = JSON.parse(batchesMatch[1]);
                         sync();
-                        
-                        statusText.innerText = "> DATA_IMPORT_SUCCESSFUL";
-                        setTimeout(() => {
-                            location.reload();
-                        }, 800);
+                        status.innerText = "> RESTORE_COMPLETE. REBOOTING...";
+                        setTimeout(() => location.reload(), 1000);
                     } else {
                         throw new Error("Invalid Format");
                     }
                 } catch (err) {
-                    statusText.innerText = "> ERROR: INVALID_FILE_FORMAT";
-                    statusText.style.color = "#ff4444";
-                    console.error("Import failed", err);
-                    // Reset input so the same file can be tried again if fixed
-                    fileInput.value = '';
+                    status.style.color = "var(--danger)";
+                    status.innerText = "> ERROR: INVALID_DATA_STRUCTURE";
+                    console.error(err);
                 }
             };
             reader.readAsText(f);

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>PEDIGREE | Settings</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="logo.png">
+    <script>
+        (function() {
+            const s = JSON.parse(localStorage.getItem('db_settings')) || {style:'modern', theme:'blue', appearance:'system'};
+            const html = document.documentElement;
+            html.classList.add('style-' + s.style);
+            html.classList.add('theme-' + s.theme);
+            let m = s.appearance;
+            if (s.style === 'terminal') m = 'dark';
+            else if (m === 'system') m = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            html.classList.add('mode-' + m);
+        })();
+    </script>
+</head>
+<body>
+    <div class="scanline"></div>
+     <nav>
+        <div style="flex: 1; display: flex; align-items: center; gap: 1rem; justify-content: center; margin-left: 45px;">
+            <img src="logo.png" width="35px" height="35px">
+            <a href="index.html">Home</a>
+            <a href="write.html">Write</a>
+            <a href="read.html">Read</a>
+            <a href="list.html">List</a>
+            <a href="transfer.html">Sync</a>
+        </div>
+        <div style="width: 45px; display: flex; justify-content: flex-end;">
+            <a href="settings.html" title="Settings" style="padding: 0; font-size: 1.2rem; text-decoration: underline;">⚙️</a>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <h1 class="title">PEDIGREE</h1>
+        <h1>SETTINGS</h1>
+        
+        <div class="card">
+            <label>VISUAL STYLE</label>
+            <select id="styleSelect" onchange="updateOptions()">
+                <option value="modern">MODERN</option>
+                <option value="terminal">TERMINAL LIKE</option>
+            </select>
+        </div>
+
+        <div class="card">
+            <label>COLOR THEME</label>
+            <select id="themeSelect"></select>
+        </div>
+
+        <div class="card">
+            <label>APPEARANCE MODE</label>
+            <select id="modeSelect"></select>
+            <p id="modeMsg" style="font-size: 0.7rem; color: var(--accent); display: none; margin-top: 10px;">
+                > NOTICE: TERMINAL_STYLE IS LOCKED TO DARK_MODE
+            </p>
+        </div>
+
+        <button onclick="applyAndSave()">APPLY CHANGES</button>
+    </div>
+    <p class="mitansh-ud">By Mitansh Udernani</p>
+    <script src="logic.js"></script>
+    <script>
+        function updateOptions() {
+            const style = document.getElementById('styleSelect').value;
+            const tSel = document.getElementById('themeSelect');
+            const mSel = document.getElementById('modeSelect');
+            const msg = document.getElementById('modeMsg');
+
+            tSel.innerHTML = '';
+            mSel.innerHTML = '';
+
+            if (style === 'terminal') {
+                tSel.innerHTML = `
+                    <option value="green-red">MATRIX GREEN</option>
+                    <option value="yellow-blue">VAULT_YB (YELLOW & BLUE)</option>
+                    <option value="pink-purple">NEON PURPLE</option>`;
+                mSel.innerHTML = `<option value="dark">DARK ONLY</option>`;
+                mSel.disabled = true;
+                msg.style.display = 'block';
+            } else {
+                tSel.innerHTML = `
+                    <option value="blue">AZURE BLUE</option>
+                    <option value="green">EMERALD GREEN</option>
+                    <option value="red">RUBY RED</option>
+                    <option value="orange">SOLAR ORANGE</option>
+                    <option value="yellow">CYBER YELLOW</option>
+                    <option value="pink">NEON PINK</option>
+                    <option value="purple">VIOLET PURPLE</option>`;
+                mSel.innerHTML = `
+                    <option value="system">SYSTEM DEFAULT</option>
+                    <option value="light">LIGHT MODE</option>
+                    <option value="dark">DARK MODE</option>`;
+                mSel.disabled = false;
+                msg.style.display = 'none';
+            }
+        }
+
+        function applyAndSave() {
+            settings.style = document.getElementById('styleSelect').value;
+            settings.theme = document.getElementById('themeSelect').value;
+            settings.appearance = document.getElementById('modeSelect').value;
+            saveSettings();
+            alert("SETTINGS UPDATED SUCCESSFULLY");
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('styleSelect').value = settings.style;
+            updateOptions();
+            document.getElementById('themeSelect').value = settings.theme;
+            document.getElementById('modeSelect').value = settings.appearance;
+        });
+    </script>
+</body>
+</html>

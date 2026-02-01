@@ -1,52 +1,70 @@
 <!DOCTYPE html>
 <html>
-<head><title>PEDIGREE | WRITE</title><link rel="stylesheet" href="style.css"><link rel="icon" href="logo.png"></head>
+<head><title>PEDIGREE | WRITE</title><link rel="stylesheet" href="style.css"><link rel="icon" href="logo.png">
+<script>
+        (function() {
+            const s = JSON.parse(localStorage.getItem('db_settings')) || {style:'modern', theme:'blue', appearance:'system'};
+            const html = document.documentElement;
+            html.classList.add('style-' + s.style);
+            html.classList.add('theme-' + s.theme);
+            let m = s.appearance;
+            if (s.style === 'terminal') m = 'dark';
+            else if (m === 'system') m = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            html.classList.add('mode-' + m);
+        })();
+    </script></head>
 <body>
      <div class="scanline"></div>
-    <nav>
-        <img src="logo.png"width="35px" height="35px">
-        <a href="index.html" >> HOME</a>
-        <a href="write.html" style="color: var(--terminal);">> WRITE</a>
-        <a href="read.html">> READ</a>
-        <a href="list.html">> LIST</a>
-        <a href="transfer.html">> SYNC</a>
+     <nav>
+        <div style="flex: 1; display: flex; align-items: center; gap: 1rem; justify-content: center; margin-left: 45px;">
+            <img src="logo.png" width="35px" height="35px">
+            <a href="index.html">Home</a>
+            <a href="write.html" style="text-decoration: underline;">Write</a>
+            <a href="read.html">Read</a>
+            <a href="list.html">List</a>
+            <a href="transfer.html">Sync</a>
+        </div>
+        <div style="width: 45px; display: flex; justify-content: flex-end;">
+            <a href="settings.html" title="Settings" style="padding: 0; font-size: 1.2rem;">⚙️</a>
+        </div>
     </nav>
+
     <div class="container">
         <h1 class="title">PEDIGREE</h1>
-        <h1>[ ENCODING_MODULE ]</h1>
+        <h1>WRITE TO DATABASE</h1>
         
-        <label>SELECT_OPERATION_MODE</label>
+        <label>SELECT OPERATION</label>
         <select id="mode" onchange="toggleMode()">
-            <option value="item">CREATE_NEW_ITEM_BLUEPRINT (12)</option>
-            <option value="batch">INITIALIZE_BATCH (6)</option>
-            <option value="unique">MINT_UNIQUE_IDENTITY (12-6-1)</option>
+            <option value="item">CREATE NEW ITEM BLUEPRINT (12 digits)</option>
+            <option value="batch">INITIALIZE BATCH (6 chars)</option>
+            <option value="unique">MAKE A UNIQUE IDENTITY (12-6-1)</option>
         </select>
 
         <div id="blueprint-fields" class="card">
-            <label>ITEM_ID (12 DIGITS)</label>
+            <label>ITEM ID (12 DIGITS)</label>
             <input type="text" id="id12" placeholder="180030176195">
-            <label>ITEM_NAME</label>
+            <label>ITEM NAME</label>
             <input type="text" id="name" placeholder="OBJECT_ALPHA">
         </div>
 
         <div id="batch-fields" class="card" style="display:none;">
-            <label>BATCH_CODE (6 CHARS)</label>
+            <label>BATCH CODE (6 CHARS)</label>
             <input type="text" id="id6" placeholder="BTCH01">
         </div>
 
         <div id="unique-fields" class="card" style="display:none;">
-            <label>UNIT_ID (1 DIGIT: 1-9)</label>
+            <label>UNIT ID (1 DIGIT: 1-9)</label>
             <input type="number" id="id1" min="1" max="9" placeholder="1">
-            <label>INITIAL_CUSTODIAN</label>
+            <label>INITIAL CUSTODIAN</label>
             <input type="text" id="owner" placeholder="USER_01">
             <label>LOCATION</label>
             <input type="text" id="location" placeholder="WAREHOUSE_A">
-            <label>DATE_AND_TIME</label>
+            <label>DATE & TIME</label>
             <input type="datetime-local" id="datetime">
-            <button type="button" onclick="setCurrentDateTime()">USE_CURRENT_TIME</button>
+            <button type="button" onclick="setCurrentDateTime()">USE CURRENT TIME</button>
         </div>
 
-        <button onclick="executeWrite()">EXECUTE_WRITE_COMMAND</button>
+        <button onclick="executeWrite()">SAVE</button>
     </div>
 
     <script src="logic.js"></script>

@@ -2,148 +2,192 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>PEDIGREE | LIST</title>
+    <title>PEDIGREE | Registry</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="logo.png">
+    <script>
+        (function() {
+            const s = JSON.parse(localStorage.getItem('db_settings')) || {style:'modern', theme:'blue', appearance:'system'};
+            const html = document.documentElement;
+            html.classList.add('style-' + s.style);
+            html.classList.add('theme-' + s.theme);
+            let m = s.appearance;
+            if (s.style === 'terminal') m = 'dark';
+            else if (m === 'system') m = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            html.classList.add('mode-' + m);
+        })();
+    </script>
     <style>
-        :root {
-            --term-green: #00ff41;
-            --term-bg: #050505;
-            --term-glow: rgba(0, 255, 65, 0.2);
-        }
-
-        /* Override modern styles for Terminal look */
-
-        
-        .filter-nav { padding-bottom: 15px; }
-        
+        .filter-nav { display: flex; gap: 10px; margin-bottom: 1.5rem; }
         .filter-btn { 
-            background: transparent !important; 
-            border: 1px solid var(--term-green) !important; 
-            color: var(--term-green) !important; 
+            flex: 1; 
+            background: var(--panel); 
+            border: 1px solid var(--border); 
+            color: var(--text); 
+            cursor: pointer; 
+            padding: 12px; 
+            font-size: 0.75rem;
             text-transform: uppercase;
-            font-size: 0.7rem !important;
+            font-weight: bold;
+            transition: all 0.2s ease;
         }
-
         .filter-btn.active { 
-            background: var(--term-green) !important; 
-            color: black !important; 
-            box-shadow: 0 0 10px var(--term-green);
+            background: var(--accent); 
+            color: white; 
+            border-color: var(--accent); 
         }
 
-        .list-item { 
-           background: transparent !important;
-            border-radius: 0 !important;
+        /* Search Section */
+        .search-container { margin-bottom: 1.5rem; }
+        .search-container input {
+            margin-bottom: 0;
+            padding-left: 40px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="gray" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>');
+            background-repeat: no-repeat;
+            background-position: 12px center;
         }
 
-        .list-item:hover { 
-            background: rgba(0, 255, 65, 0.1) !important; 
+        /* List Items */
+        .registry-list { min-height: 300px; padding: 0 !important; }
+        .registry-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background 0.2s ease;
         }
-
-        .badge { 
-            color: rgb(255, 255, 255) !important; 
-            border-radius: 0 !important;
-        }
+        .registry-item:last-child { border-bottom: none; }
+        .registry-item:hover { background: rgba(var(--accent-rgb, 128, 128, 128), 0.1); }
         
-        .scanline {
-            width: 100%;
-            height: 2px;
-            background: rgba(0, 255, 65, 0.1);
-            position: fixed;
-            top: 0;
-            z-index: 1000;
-            pointer-events: none;
-            animation: scan 4s linear infinite;
-        }
+        .item-main { display: flex; flex-direction: column; gap: 4px; }
+        .item-id { font-weight: bold; font-size: 0.95rem; }
+        .item-sub { font-size: 0.75rem; opacity: 0.6; text-transform: uppercase; }
 
-        @keyframes scan {
-            0% { top: 0; }
-            100% { top: 100%; }
+        .empty-state {
+            padding: 60px 20px;
+            text-align: center;
+            opacity: 0.5;
+            font-size: 0.85rem;
         }
     </style>
 </head>
 <body>
     <div class="scanline"></div>
-     <nav>
-        <img src="logo.png"width="35px" height="35px">
-        <a href="index.html">> HOME</a>
-        <a href="write.html">> WRITE</a>
-        <a href="read.html">> READ</a>
-        <a href="list.html" style="color: var(--terminal);">> LIST</a>
-        <a href="transfer.html">> SYNC</a>
+    <nav>
+        <div style="flex: 1; display: flex; align-items: center; gap: 1rem; justify-content: center; margin-left: 45px;">
+            <img src="logo.png" width="35px" height="35px">
+            <a href="index.html">Home</a>
+            <a href="write.html">Write</a>
+            <a href="read.html">Read</a>
+            <a href="list.html" style="text-decoration: underline;">List</a>
+            <a href="transfer.html">Sync</a>
+        </div>
+        <div style="width: 45px; display: flex; justify-content: flex-end;">
+            <a href="settings.html" title="Settings" style="padding: 0; font-size: 1.2rem;">⚙️</a>
+        </div>
     </nav>
-    
+
     <div class="container">
         <h1 class="title">PEDIGREE</h1>
-        <h1>[ REGISTRY_MANIFEST ]</h1>
+        <h1>DATABASE MANIFEST</h1>
         
         <div class="filter-nav">
-            <button id="b1" class="filter-btn active" onclick="show('u')">TYPE: IDENTITIES</button>
-            <button id="b2" class="filter-btn" onclick="show('b')">TYPE: BATCHES</button>
-            <button id="b3" class="filter-btn" onclick="show('i')">TYPE: BLUEPRINTS</button>
+            <button id="btn-u" class="filter-btn" onclick="setMode('u')">Identities</button>
+            <button id="btn-b" class="filter-btn" onclick="setMode('b')">Batches</button>
+            <button id="btn-i" class="filter-btn" onclick="setMode('i')">Blueprints</button>
         </div>
 
-        <div id="list-display">
-            </div>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="FILTER RECORDS..." oninput="renderList()">
+        </div>
+
+        <div id="registryDisplay" class="card registry-list">
+            <!-- Content Injected via JavaScript -->
+        </div>
     </div>
+
     <p class="mitansh-ud">By Mitansh Udernani</p>
+
     <script src="logic.js"></script>
     <script>
-        function show(m) {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            const l = document.getElementById('list-display'); 
-            l.innerHTML = "> ACCESSING SECTORS...<br>";
+        let currentMode = 'u';
 
-            // Small delay to mimic terminal loading
-            setTimeout(() => {
-                l.innerHTML = "";
-                if(m==='u') {
-                    document.getElementById('b1').classList.add('active');
-                    let found = false;
-                    for(let b in batches) {
-                        for(let i in batches[b]) {
-                            for(let u in batches[b][i]) {
-                                found = true;
-                                l.innerHTML += `
-                                <div class='list-item'>
-                                    <div>
-                                        <span class="badge">SID: ${i}-${b}-${u}</span><br>
-                                        <span>CUSTODIAN: ${batches[b][i][u].current_owner}</span>
-                                    </div>
-                                    <button onclick="view('${i}-${b}-${u}')" style="width:auto; background:transparent; border:1px solid var(--accent); color:var(--accent); font-size:0.6rem;">DECODE</button>
-                                    <button onclick="location.href='edit.html?id=${i}-${b}-${u}'" style="width:auto; border:1px solid var(--terminal); color:var(--terminal); font-size:0.6rem; margin-left:5px;">EDIT</button>
-                                </div>`;
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`btn-${mode}`).classList.add('active');
+            document.getElementById('searchInput').value = ''; // Clear search when switching tabs
+            renderList();
+        }
+
+        function renderList() {
+            const display = document.getElementById('registryDisplay');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            display.innerHTML = "";
+            let count = 0;
+
+            if (currentMode === 'u') {
+                for (let b in batches) {
+                    for (let i in batches[b]) {
+                        for (let u in batches[b][i]) {
+                            const id = `${i}-${b}-${u}`;
+                            const owner = batches[b][i][u].current_owner;
+                            if (id.toLowerCase().includes(search) || owner.toLowerCase().includes(search)) {
+                                display.innerHTML += `
+                                    <div class="registry-item" onclick="location.href='read.html?search=${id}'">
+                                        <div class="item-main">
+                                            <span class="item-id">${id}</span>
+                                            <span class="item-sub">Custodian: ${owner}</span>
+                                        </div>
+                                        <span class="badge">UNIT</span>
+                                    </div>`;
+                                count++;
                             }
                         }
                     }
-                    if(!found) l.innerHTML = "> NO_DATA_DETECTED";
-                } 
-                else if(m==='b') {
-                    document.getElementById('b2').classList.add('active');
-                    for(let b in batches) {
-                        l.innerHTML += `<div class='list-item' style='display:flex; justify-content:space-between;'>
-                                            <span onclick="view('${b}')">>> BATCH_ID: ${b}</span>
-                                            <button onclick="location.href='edit.html?id=${b}'" style="width:20%; font-size:0.6rem;">EDIT</button>
-                                        </div>`;
-                    }
-                } 
-                else {
-                    document.getElementById('b3').classList.add('active');
-                    for(let i in items) {
-                        l.innerHTML += `<div class='list-item' style='display:flex; justify-content:space-between;'>
-                                            <span onclick="view('${i}')">>> BLUEPRINT: ${items[i].name}</span>
-                                            <button onclick="location.href='edit.html?id=${i}'" style="width:20%; font-size:0.6rem;">EDIT</button>
-                                        </div>`
+                }
+            } else if (currentMode === 'b') {
+                for (let b in batches) {
+                    if (b.toLowerCase().includes(search)) {
+                        display.innerHTML += `
+                            <div class="registry-item" onclick="location.href='read.html?search=${b}'">
+                                <div class="item-main">
+                                    <span class="item-id">BATCH: ${b}</span>
+                                    <span class="item-sub">${Object.keys(batches[b]).length} Product Types</span>
+                                </div>
+                                <span class="badge">BATCH</span>
+                            </div>`;
+                        count++;
                     }
                 }
-            }, 300);
+            } else if (currentMode === 'i') {
+                for (let i in items) {
+                    const name = items[i].name;
+                    if (i.includes(search) || name.toLowerCase().includes(search)) {
+                        display.innerHTML += `
+                            <div class="registry-item" onclick="location.href='read.html?search=${i}'">
+                                <div class="item-main">
+                                    <span class="item-id">${name}</span>
+                                    <span class="item-sub">ID: ${i}</span>
+                                </div>
+                                <span class="badge">BLUEPRINT</span>
+                            </div>`;
+                        count++;
+                    }
+                }
+            }
+
+            if (count === 0) {
+                display.innerHTML = `<div class="empty-state">> NO_MATCHING_RECORDS_FOUND</div>`;
+            }
         }
 
-        function view(id) {
-            window.location.href = `read.html?search=${id}`;
-        }
-
-        show('u');
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            setMode('u');
+        });
     </script>
 </body>
 </html>

@@ -5,6 +5,18 @@
     <title>PEDIGREE | EDIT</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="logo.png">
+    <script>
+        (function() {
+            const s = JSON.parse(localStorage.getItem('db_settings')) || {style:'modern', theme:'blue', appearance:'system'};
+            const html = document.documentElement;
+            html.classList.add('style-' + s.style);
+            html.classList.add('theme-' + s.theme);
+            let m = s.appearance;
+            if (s.style === 'terminal') m = 'dark';
+            else if (m === 'system') m = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            html.classList.add('mode-' + m);
+        })();
+    </script>
     <style>
         .history-edit-card { 
             border: 1px solid #222; 
@@ -31,18 +43,25 @@
 </head>
 <body>
     <div class="scanline"></div>
-    <nav>
-        <img src="logo.png" width="35px" height="35px">
-        <a href="index.html">> HOME</a>
-        <a href="write.html">> WRITE</a>
-        <a href="read.html">> READ</a>
-        <a href="list.html">> LIST</a>
-        <a href="transfer.html">> SYNC</a>
+     <nav>
+        <div style="flex: 1; display: flex; align-items: center; gap: 1rem; justify-content: center; margin-left: 45px;">
+            <img src="logo.png" width="35px" height="35px">
+            <a href="index.html" style="text-decoration: underline;">Home</a>
+            <a href="write.html">Write</a>
+            <a href="read.html">Read</a>
+            <a href="list.html">List</a>
+            <a href="transfer.html" >Sync</a>
+            <a href="edit.html" style="text-decoration: underline;">edit</a>
+        </div>
+        <div style="width: 45px; display: flex; justify-content: flex-end;">
+            <a href="settings.html" title="Settings" style="padding: 0; font-size: 1.2rem;">⚙️</a>
+        </div>
     </nav>
+
 
     <div class="container">
         <h1 class="title">PEDIGREE</h1>
-        <h1>[ EDIT_MODULE ]</h1>
+        <h1>EDIT DATABASE</h1>
 
         <div id="main-edit-container">
             <div id="edit-interface" class="card">
@@ -50,11 +69,11 @@
             </div>
 
             <div id="transfer-interface" style="display:none;">
-                <div class="section-header">INITIATE_TRANSFER</div>
+                <div class="section-header">INITIATE TRANSFER</div>
                 <div class="card" style="background: rgba(0, 255, 65, 0.05); border-color: var(--terminal);">
-                    <label>NEW_OWNER_ID</label>
+                    <label>NEW OWNER ID</label>
                     <input type="text" id="transferTo" placeholder="Recipient Code...">
-                    <label>TARGET_LOCATION</label>
+                    <label>TARGET LOCATION</label>
                     <input type="text" id="transferLocation" placeholder="Deployment Area...">
                     <button onclick="executeTransfer()" style="border-color: var(--terminal); color: var(--terminal);">RECORD_TRANSFER_EVENT</button>
                 </div>
@@ -66,9 +85,9 @@
         </div>
 
         <div class="card" style="border-color: var(--accent); margin-top: 50px;">
-            <label style="color: var(--accent);">DANGER_ZONE_PROTOCOL</label>
+            <label style="color: var(--accent);">DANGER ZONE PROTOCOL</label>
             <p style="font-size: 0.7rem; color: #888; margin-bottom: 10px;">Warning: This action will permanently delete all records associated with this ID from the local database.</p>
-            <button onclick="executeDelete()" style="background: rgba(233, 69, 96, 0.2); border-color: var(--accent);">PURGE_RECORD_FROM_SYSTEM</button>
+            <button onclick="executeDelete()" style="background: rgba(233, 69, 96, 0.2); border-color: var(--accent);">REMOVE RECORD FROM SYSTEM</button>
         </div>
     </div>
     <p class="mitansh-ud">By Mitansh Udernani</p>
@@ -83,44 +102,44 @@
         const transferInterface = document.getElementById('transfer-interface');
 
         function loadInterface() {
-            if (!target) return interface.innerHTML = "ERR: NO_TARGET_SPECIFIED";
+            if (!target) return interface.innerHTML = "ERR: NO TARGET SPECIFIED";
 
             if (parts.length === 3) { // Unique Identity
                 const data = batches[parts[1]]?.[parts[0]]?.[parts[2]];
-                if(!data) return interface.innerHTML = "ERR: IDENTITY_NOT_FOUND";
+                if(!data) return interface.innerHTML = "ERR: IDENTITY NOT FOUND";
 
                 transferInterface.style.display = "block";
                 interface.innerHTML = `
-                    <div class="section-header">CORE_IDENTITY_CONFIG: ${target}</div>
+                    <div class="section-header">CORE IDENTITY CONFIG: ${target}</div>
                     <span class="meta-label">Active Custodian</span>
                     <input type="text" id="editOwner" value="${data.current_owner}">
                     <span class="meta-label">Current Location</span>
                     <input type="text" id="editLoc" value="${data.location || ''}">
-                    <button onclick="saveIdentity()">SAVE_CORE_CHANGES</button>`;
+                    <button onclick="saveIdentity()">SAVE CORE CHANGES</button>`;
 
                 renderHistory(data.history);
             } else if (parts.length === 1 && target.length === 12) { // Item Blueprint
-                if(!items[target]) return interface.innerHTML = "ERR: BLUEPRINT_NOT_FOUND";
+                if(!items[target]) return interface.innerHTML = "ERR: BLUEPRINT NOT FOUND";
                 interface.innerHTML = `
-                    <div class="section-header">BLUEPRINT_CONFIG: ${target}</div>
+                    <div class="section-header">BLUEPRINT CONFIG: ${target}</div>
                     <span class="meta-label">Asset Designation</span>
                     <input type="text" id="editItemName" value="${items[target].name}">
-                    <button onclick="saveItem()">UPDATE_BLUEPRINT</button>`;
+                    <button onclick="saveItem()">UPDATE BLUEPRINT</button>`;
             } else if (batches[target]) { // Batch
                 interface.innerHTML = `
-                    <div class="section-header">BATCH_CONFIG: ${target}</div>
+                    <div class="section-header">BATCH CONFIG: ${target}</div>
                     <span class="meta-label">Batch ID Code</span>
                     <input type="text" id="newBatchId" value="${target}">
-                    <button onclick="saveBatch()">UPDATE_BATCH_REGISTRY</button>`;
+                    <button onclick="saveBatch()">UPDATE BATCH REGISTRY</button>`;
             } else {
-                interface.innerHTML = "ERR: UNRECOGNIZED_DATA_TYPE";
+                interface.innerHTML = "ERR: UNRECOGNIZED DATA TYPE";
             }
         }
 
         function renderHistory(history) {
-            histInterface.innerHTML = "<hr><div class='section-header'>HISTORY_LOG_RECONSTRUCTION</div>";
+            histInterface.innerHTML = "<hr><div class='section-header'>HISTORY LOG RECONSTRUCTION</div>";
             if (!history || history.length === 0) {
-                histInterface.innerHTML += "<p style='font-size:0.8rem; color:#666;'>> NO_LOG_ENTRIES_FOUND</p>";
+                histInterface.innerHTML += "<p style='font-size:0.8rem; color:#666;'>> NO LOG ENTRIES FOUND</p>";
                 return;
             }
 
@@ -139,7 +158,7 @@
                     <input type="text" value="${entry.to}" onchange="updateHist(${actualIndex}, 'to', this.value)">
                     <span class="meta-label">Location</span>
                     <input type="text" value="${entry.location || ''}" onchange="updateHist(${actualIndex}, 'location', this.value)">
-                    <button class="del-hist-btn" onclick="deleteHistEntry(${actualIndex})">DELETE_LOG_ENTRY</button>
+                    <button class="del-hist-btn" onclick="deleteHistEntry(${actualIndex})">DELETE LOG ENTRY</button>
                 `;
                 histInterface.appendChild(div);
             });
@@ -152,7 +171,7 @@
         }
 
         function deleteHistEntry(index) {
-            if(!confirm("CONFIRM: REMOVE_SINGLE_LOG_ENTRY?")) return;
+            if(!confirm("CONFIRM: REMOVE SINGLE LOG ENTRY?")) return;
             batches[parts[1]][parts[0]][parts[2]].history.splice(index, 1);
             sync();
             loadInterface();
@@ -164,7 +183,7 @@
             const data = batches[parts[1]][parts[0]][parts[2]];
 
             if (!to || !loc) {
-                alert("ERR: INCOMPLETE_TRANSFER_DATA");
+                alert("ERR: INCOMPLETE TRANSFER DATA");
                 return;
             }
 
@@ -191,19 +210,19 @@
             data.current_owner = document.getElementById('editOwner').value;
             data.location = document.getElementById('editLoc').value;
             sync();
-            alert("CORE_IDENTITY_UPDATED");
+            alert("CORE IDENTITY UPDATED");
         }
 
         function saveItem() {
             items[target].name = document.getElementById('editItemName').value;
             sync();
-            alert("BLUEPRINT_UPDATED");
+            alert("BLUEPRINT UPDATED");
         }
 
         function saveBatch() {
             const newId = document.getElementById('newBatchId').value.trim();
             if (!newId || newId === target) return;
-            if (batches[newId]) return alert("ERR: BATCH_ID_COLLISION");
+            if (batches[newId]) return alert("ERR: BATCH ID COLLISION");
             
             batches[newId] = batches[target];
             delete batches[target];
@@ -212,7 +231,7 @@
         }
 
         function executeDelete() {
-            if (!confirm("CRITICAL: PERFORM_PERMANENT_PURGE?")) return;
+            if (!confirm("CRITICAL: PERFORM PERMANENT PURGE?")) return;
             
             if (parts.length === 3) {
                 delete batches[parts[1]][parts[0]][parts[2]];
@@ -224,7 +243,7 @@
             }
             
             sync();
-            alert("RECORDS_PURGED_FROM_LOCAL_STORAGE");
+            alert("RECORDS REMOVED FROM LOCAL STORAGE");
             window.location.href = "list.html";
         }
 
