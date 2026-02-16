@@ -26,5 +26,4 @@ Developed by Mitansh Udernani.
 > Note: This system uses LocalStorage for data persistence. For multi-device synchronization, use the Export/Import features in the SYNC tab.
 
 ## Use Web Version At: - 
---
 - https://mitanshrs.github.io/PEDIGREE
