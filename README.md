@@ -23,7 +23,8 @@ PEDIGREE provides a lightweight, local-first solution for tracking the provenanc
 - **Mint Identity:** Link the Item and Batch with a Unit ID (1-9).
 - **Track:** Use the READ tab to view the custody log or EDIT to record a transfer.
 ## 👤 Maker
-Developed by Mitansh Udernani.
+Developed by Zegot.
+Person name mitansh udernani
 > Note: This system uses LocalStorage for data persistence. For multi-device synchronization, use the Export/Import features in the SYNC tab.
 
 ## Use Web Version At: - 
