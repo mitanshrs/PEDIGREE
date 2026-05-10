@@ -15,7 +15,8 @@ PEDIGREE provides a lightweight, local-first solution for tracking the provenanc
 - `list.html`: Registry manifest for browsing all sectors.
 - `transfer.html`: Sync, backup, and reset protocols
 - `settings.html`: Edit Themes, and the colour of the website
-- `logic.js` & `style.css`: The engine and aesthetic core.
+- `logic.js` & `style.css`: The engine and aesthetic core.\
+- `sitemap.xml`& `sitemap.txt` sitemap for search engines like Google, Bing, etc
 ## 📖 Quick Start
 - **Create a Blueprint:** Go to WRITE, select Item mode, and enter a 12-digit ID.
 - **Initialise Batch:** Create a 6-character batch code.
