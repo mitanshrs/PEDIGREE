@@ -1,0 +1,7 @@
+https://mitanshrs.github.io/PEDIGREE
+https://mitanshrs.github.io/PEDIGREE/list
+https://mitanshrs.github.io/PEDIGREE/help
+https://mitanshrs.github.io/PEDIGREE/read
+https://mitanshrs.github.io/PEDIGREE/write
+https://mitanshrs.github.io/PEDIGREE/transfer
+https://mitanshrs.github.io/PEDIGREE/settings
